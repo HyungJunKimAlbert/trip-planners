@@ -189,6 +189,7 @@
 
 <div class="toolbar">
   <div class="brand">🇺🇸 <span>USA</span> Trip Planner</div>
+  <span id="syncBadge" style="font-size:13px;color:#8a8a82">연결 중…</span>
   <button class="sm" onclick="exportJSON()">JSON 내보내기</button>
   <button class="sm" onclick="document.getElementById('importFile').click()">가져오기</button>
   <button class="sm" onclick="resetAll()">초기화</button>
@@ -930,6 +931,16 @@ function resetAll() {
 renderAll();
 // 자동 모드면 캐시(1시간) 확인 후 필요 시 실시간 환율 호출
 fetchRate(false);
+
+/* ---------------- 클라우드 동기화 브리지 ---------------- */
+// supabase-sync.js가 state를 읽고/교체할 수 있도록 노출
+window.LOCAL_KEY = KEY;
+window.TRIP_ID = "usa";
+window.__getState = () => state;
+window.__setState = (obj) => { state = obj; renderAll(); fetchRate(false); };
 </script>
+<!-- Supabase 클라우드 동기화 (공유 편집) -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../shared/supabase-sync.js"></script>
 </body>
 </html>
