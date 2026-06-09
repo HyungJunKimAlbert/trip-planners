@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>여행 일정표</title>
+<style>
+  :root {
+    --bg: #f7f5f0; --card: #fff; --ink: #2b2b2b; --muted: #8a8a82;
+    --line: #e4e0d8; --accent: #c0563a; --shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo", "Noto Sans KR", Roboto, sans-serif;
+    background: var(--bg); color: var(--ink); padding: 24px;
+  }
+  .wrap { width: 100%; max-width: 720px; text-align: center; }
+  .kicker { color: var(--accent); font-weight: 600; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+  h1 { font-size: 36px; letter-spacing: -.5px; margin: 6px 0 8px; }
+  .sub { color: var(--muted); margin-bottom: 36px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 560px) { .grid { grid-template-columns: 1fr; } h1 { font-size: 28px; } }
+  a.card {
+    display: block; text-decoration: none; color: inherit; text-align: left;
+    background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: var(--shadow); padding: 26px; transition: .18s;
+  }
+  a.card:hover { transform: translateY(-3px); border-color: var(--accent); box-shadow: 0 6px 14px rgba(0,0,0,.08), 0 18px 40px rgba(0,0,0,.07); }
+  .flag { font-size: 40px; }
+  .card h2 { margin: 12px 0 4px; font-size: 22px; }
+  .card .dates { color: var(--muted); font-size: 14px; }
+  .card .go { color: var(--accent); font-weight: 600; font-size: 14px; margin-top: 14px; }
+  footer { margin-top: 34px; color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="kicker">Travel Journal</div>
+    <h1>✈️ 여행 일정표</h1>
+    <div class="sub">관리할 여행을 선택하세요. 일정·예산·링크·사진을 한곳에서.</div>
+    <div class="grid">
+      <a class="card" href="usa/">
+        <div class="flag">🇺🇸</div>
+        <h2>미국 서부 여행</h2>
+        <div class="dates">라스베가스 · LA · 7/31 – 8/10</div>
+        <div class="go">열기 →</div>
+      </a>
+      <a class="card" href="fukuoka/">
+        <div class="flag">🇯🇵</div>
+        <h2>일본 후쿠오카 여행</h2>
+        <div class="dates">후쿠오카 · 6/27 – 6/30</div>
+        <div class="go">열기 →</div>
+      </a>
+    </div>
+    <footer>각 일정 데이터는 사용자 브라우저에 저장됩니다 (localStorage). 백업은 각 페이지의 “JSON 내보내기”를 이용하세요.</footer>
+  </div>
+</body>
+</html>

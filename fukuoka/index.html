@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>일본 후쿠오카 여행 일정표</title>
+<style>
+  :root {
+    --bg: #f7f5f0;
+    --card: #ffffff;
+    --ink: #2b2b2b;
+    --muted: #8a8a82;
+    --line: #e4e0d8;
+    --accent: #c0563a;
+    --accent-soft: #f3e3dd;
+    --blue: #3a6ea5;
+    --green: #4a7c59;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Apple SD Gothic Neo",
+      "Noto Sans KR", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px 100px; }
+
+  /* ---- top toolbar ---- */
+  .toolbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(247,245,240,.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    display: flex; gap: 8px; align-items: center;
+    padding: 10px 20px; margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .toolbar .brand { font-weight: 700; margin-right: auto; letter-spacing: -.3px; }
+  .toolbar .brand span { color: var(--accent); }
+
+  /* ---- buttons ---- */
+  button {
+    font: inherit; cursor: pointer;
+    border: 1px solid var(--line); background: var(--card); color: var(--ink);
+    border-radius: 8px; padding: 6px 12px; transition: .15s;
+  }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover { filter: brightness(1.06); color: #fff; }
+  button.ghost { background: transparent; border-color: transparent; color: var(--muted); padding: 4px 8px; }
+  button.ghost:hover { color: var(--accent); }
+  button.sm { padding: 3px 9px; font-size: 13px; border-radius: 6px; }
+
+  /* ---- hero / overview ---- */
+  .hero {
+    background: var(--card); border-radius: 16px; box-shadow: var(--shadow);
+    padding: 34px 32px; margin: 18px 0 30px; position: relative;
+    border: 1px solid var(--line);
+  }
+  .hero .kicker { color: var(--accent); font-weight: 600; font-size: 13px; letter-spacing: 2px; text-transform: uppercase; }
+  .hero h1 { margin: 6px 0 4px; font-size: 34px; letter-spacing: -.5px; }
+  .hero .meta { color: var(--muted); font-size: 15px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .hero .meta b { color: var(--ink); font-weight: 600; }
+  .hero .memo { margin-top: 16px; white-space: pre-wrap; color: #4a4a44; }
+  .hero .memo img { max-width: 100%; border-radius: 10px; margin: 8px 0; display: block; }
+  .hero .dday {
+    display: inline-block; margin-top: 14px; background: var(--accent-soft);
+    color: var(--accent); font-weight: 700; padding: 5px 14px; border-radius: 999px; font-size: 14px;
+  }
+  .hero .edit-btn { position: absolute; top: 18px; right: 18px; }
+
+  /* ---- section heading ---- */
+  .section { margin: 44px 0 0; }
+  .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 18px; }
+  .section-head h2 { font-size: 22px; margin: 0; letter-spacing: -.3px; }
+  .section-head .count { color: var(--muted); font-size: 14px; }
+  .section-head .sp { margin-left: auto; }
+
+  /* ---- timeline (blog posts) ---- */
+  .day {
+    background: var(--card); border: 1px solid var(--line); border-radius: 14px;
+    box-shadow: var(--shadow); padding: 22px 24px; margin-bottom: 22px;
+  }
+  .day-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
+  .day-head .date { font-size: 18px; font-weight: 700; }
+  .day-head .dow { color: var(--muted); font-size: 14px; }
+  .day-head .sp { margin-left: auto; }
+  .timeline { margin-top: 14px; border-left: 2px solid var(--line); padding-left: 0; }
+  .tl-item { position: relative; padding: 12px 0 12px 26px; }
+  .tl-item::before {
+    content: ""; position: absolute; left: -7px; top: 18px;
+    width: 12px; height: 12px; border-radius: 50%;
+    background: #fff; border: 2px solid var(--accent);
+  }
+  .tl-item + .tl-item { border-top: 1px dashed var(--line); }
+  .tl-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .tl-time { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 52px; }
+  .tl-place { font-weight: 600; }
+  .tl-memo { color: #5a5a52; font-size: 14px; margin-top: 2px; white-space: pre-wrap; }
+  .tl-memo img { max-width: 100%; border-radius: 8px; margin: 6px 0; display: block; }
+  /* contenteditable rich memo editor */
+  .rich {
+    width: 100%; min-height: 90px; max-height: 320px; overflow: auto;
+    font: inherit; padding: 8px 10px; border: 1px solid var(--line);
+    border-radius: 8px; background: #fff; color: var(--ink); line-height: 1.6;
+  }
+  .rich:focus { outline: none; border-color: var(--accent); }
+  .rich:empty::before { content: attr(data-placeholder); color: var(--muted); }
+  .rich img { max-width: 100%; border-radius: 8px; margin: 6px 0; display: block; }
+  .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .tl-actions { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+  .map-frame { margin-top: 10px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
+  .map-frame iframe { width: 100%; height: 220px; border: 0; display: block; }
+  a.maplink { color: var(--blue); text-decoration: none; font-size: 13px; }
+  a.maplink:hover { text-decoration: underline; }
+
+  /* ---- budget ---- */
+  .budget-summary {
+    display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 18px;
+  }
+  .bcard {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 18px; box-shadow: var(--shadow); flex: 1; min-width: 150px;
+  }
+  .bcard .lbl { color: var(--muted); font-size: 13px; }
+  .bcard .val { font-size: 22px; font-weight: 700; letter-spacing: -.5px; }
+  .bcard .sub { color: var(--muted); font-size: 12px; }
+  .rate-row { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); margin-bottom: 14px; flex-wrap: wrap; }
+  .rate-row input { width: 90px; }
+  table.budget { width: 100%; border-collapse: collapse; background: var(--card);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); }
+  table.budget th, table.budget td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--line); font-size: 14px; }
+  table.budget th { background: #faf8f3; color: var(--muted); font-weight: 600; font-size: 13px; }
+  table.budget td.amt { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+  table.budget tr:last-child td { border-bottom: 0; }
+  .cat-pill { display: inline-block; background: var(--accent-soft); color: var(--accent);
+    font-size: 12px; font-weight: 600; padding: 2px 9px; border-radius: 999px; }
+
+  /* ---- links ---- */
+  .link-group { margin-bottom: 18px; }
+  .link-group h3 { font-size: 15px; margin: 0 0 8px; color: var(--green); }
+  .link-list { display: flex; flex-direction: column; gap: 6px; }
+  .link-item {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 9px 14px; box-shadow: var(--shadow);
+  }
+  .link-item a { color: var(--ink); text-decoration: none; font-weight: 600; flex: 1; }
+  .link-item a:hover { color: var(--accent); }
+  .link-item .url { color: var(--muted); font-size: 12px; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* ---- forms / modal ---- */
+  .modal-back {
+    position: fixed; inset: 0; background: rgba(0,0,0,.4);
+    display: none; align-items: flex-start; justify-content: center; z-index: 100;
+    padding: 40px 16px; overflow: auto;
+  }
+  .modal-back.open { display: flex; }
+  .modal {
+    background: var(--card); border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,.25);
+    width: 100%; max-width: 460px; padding: 24px;
+  }
+  .modal h3 { margin: 0 0 16px; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 4px; }
+  .field input, .field select, .field textarea {
+    width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line);
+    border-radius: 8px; background: #fff; color: var(--ink);
+  }
+  .field textarea { resize: vertical; min-height: 64px; }
+  .field.row2 { display: flex; gap: 10px; }
+  .field.row2 > div { flex: 1; }
+  .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+
+  .empty { color: var(--muted); font-style: italic; padding: 8px 2px; }
+
+  @media (max-width: 560px) {
+    .hero h1 { font-size: 26px; }
+    .hero { padding: 26px 20px; }
+    .toolbar .brand { width: 100%; margin-bottom: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="brand">🇯🇵 <span>Fukuoka</span> Trip Planner</div>
+  <button class="sm" onclick="exportJSON()">JSON 내보내기</button>
+  <button class="sm" onclick="document.getElementById('importFile').click()">가져오기</button>
+  <button class="sm" onclick="resetAll()">초기화</button>
+  <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
+</div>
+
+<div class="wrap">
+
+  <!-- ===== OVERVIEW / HERO ===== -->
+  <div class="hero" id="hero"><!-- rendered --></div>
+
+  <!-- ===== ITINERARY ===== -->
+  <div class="section">
+    <div class="section-head">
+      <h2>📅 일정표</h2>
+      <span class="count" id="dayCount"></span>
+      <span class="sp"></span>
+      <button class="sm primary" onclick="openDayForm()">+ 날짜 추가</button>
+    </div>
+    <div id="days"></div>
+  </div>
+
+  <!-- ===== BUDGET ===== -->
+  <div class="section">
+    <div class="section-head">
+      <h2>💰 예산</h2>
+      <span class="sp"></span>
+      <button class="sm primary" onclick="openBudgetForm()">+ 항목 추가</button>
+    </div>
+    <div class="rate-row">
+      환율 <b style="color:var(--ink)">1 JPY =</b>
+      <input type="number" id="rate" value="9" min="0" step="0.01" oninput="onRateChange()"> KRW
+      <button class="sm" id="rateRefresh" onclick="fetchRate(true)" title="실시간 환율 가져오기">🔄</button>
+      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="rateAuto" onchange="onAutoToggle()"> 자동
+      </label>
+      <span id="rateStatus" style="font-size:12px;color:var(--muted)"></span>
+      <span style="margin-left:auto"></span>
+      표시 통화:
+      <select id="displayCur" onchange="renderBudget()" style="font:inherit;padding:4px 8px;border-radius:6px;border:1px solid var(--line)">
+        <option value="JPY">JPY (¥)</option>
+        <option value="KRW">KRW (₩)</option>
+      </select>
+    </div>
+    <div class="budget-summary" id="budgetSummary"></div>
+    <div id="budgetTable"></div>
+  </div>
+
+  <!-- ===== LINKS ===== -->
+  <div class="section">
+    <div class="section-head">
+      <h2>🔗 링크 모음</h2>
+      <span class="sp"></span>
+      <button class="sm primary" onclick="openLinkForm()">+ 링크 추가</button>
+    </div>
+    <div id="links"></div>
+  </div>
+
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-back" id="modalBack">
+  <div class="modal" id="modal"><!-- rendered --></div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------------- state ---------------- */
+const KEY = "fukuokaTripPlanner";
+const uid = () => Math.random().toString(36).slice(2, 9);
+
+const SEED = {
+  overview: {
+    title: "일본 후쿠오카 여행",
+    city: "Fukuoka, Japan",
+    startDate: "2026-06-27",
+    endDate: "2026-06-30",
+    memo: "후쿠오카 3박 4일 (6/27~6/30). 시내 위주 + 근교 당일치기."
+  },
+  days: [
+    {
+      id: uid(), date: "2026-06-27",
+      items: [
+        { id: uid(), time: "", place: "후쿠오카 공항 도착", memo: "지하철로 시내 이동, 체크인", mapQuery: "Fukuoka Airport" },
+        { id: uid(), time: "", place: "캐널시티 하카타", memo: "쇼핑 + 분수쇼", mapQuery: "Canal City Hakata" },
+        { id: uid(), time: "", place: "나카스 포장마차 거리", memo: "야타이에서 저녁", mapQuery: "Nakasu Yatai Fukuoka" }
+      ]
+    },
+    {
+      id: uid(), date: "2026-06-28",
+      items: [
+        { id: uid(), time: "", place: "다자이후 텐만구", memo: "근교 당일치기", mapQuery: "Dazaifu Tenmangu" },
+        { id: uid(), time: "", place: "스타벅스 다자이후점", memo: "쿠마 켄고 디자인", mapQuery: "Starbucks Dazaifu Omotesando" }
+      ]
+    },
+    {
+      id: uid(), date: "2026-06-29",
+      items: [
+        { id: uid(), time: "", place: "오호리 공원", memo: "산책", mapQuery: "Ohori Park Fukuoka" },
+        { id: uid(), time: "", place: "후쿠오카 타워", memo: "전망대 + 모모치 해변", mapQuery: "Fukuoka Tower" }
+      ]
+    },
+    {
+      id: uid(), date: "2026-06-30",
+      items: [
+        { id: uid(), time: "", place: "텐진 쇼핑", memo: "마지막 쇼핑 + 기념품", mapQuery: "Tenjin Fukuoka" },
+        { id: uid(), time: "", place: "후쿠오카 공항 출국", memo: "공항 이동 후 출국", mapQuery: "Fukuoka Airport" }
+      ]
+    }
+  ],
+  budget: [
+    { id: uid(), category: "항공", label: "왕복 항공권 2인", amount: 400000, currency: "KRW" },
+    { id: uid(), category: "숙소", label: "후쿠오카 호텔 3박", amount: 60000, currency: "JPY" },
+    { id: uid(), category: "교통", label: "지하철·버스 패스", amount: 5000, currency: "JPY" }
+  ],
+  links: [
+    { id: uid(), category: "항공", title: "항공권 예약 확인", url: "https://www.google.com/travel/flights" },
+    { id: uid(), category: "숙소", title: "Booking.com 예약", url: "https://www.booking.com" },
+    { id: uid(), category: "지도", title: "전체 일정 지도", url: "https://maps.google.com" }
+  ],
+  rate: 9,
+  autoRate: true,          // true면 1시간마다 실시간 환율 자동 갱신
+  rateUpdatedAt: 0,        // 마지막 갱신 시각(ms)
+  rateSource: ""           // "실시간" | "수동"
+};
+
+let state = load();
+
+function load() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) { console.warn("load failed", e); }
+  return structuredClone(SEED);
+}
+function save() {
+  localStorage.setItem(KEY, JSON.stringify(state));
+  renderAll();
+}
+
+/* ---------------- helpers ---------------- */
+const DOW = ["일", "월", "화", "수", "목", "금", "토"];
+function fmtDate(iso) {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  return `${d.getMonth() + 1}월 ${d.getDate()}일`;
+}
+function dow(iso) {
+  if (!iso) return "";
+  const d = new Date(iso + "T00:00:00");
+  return DOW[d.getDay()] + "요일";
+}
+function daysBetween(a, b) {
+  if (!a || !b) return 0;
+  const ms = new Date(b + "T00:00:00") - new Date(a + "T00:00:00");
+  return Math.round(ms / 86400000) + 1;
+}
+function ddayLabel(start) {
+  if (!start) return "";
+  const today = new Date(); today.setHours(0,0,0,0);
+  const s = new Date(start + "T00:00:00");
+  const diff = Math.round((s - today) / 86400000);
+  if (diff > 0) return `D-${diff}`;
+  if (diff === 0) return "D-DAY 🎉";
+  return `여행 ${-diff}일차 이후`;
+}
+function esc(s) {
+  return String(s ?? "").replace(/[&<>"']/g, c =>
+    ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function mapSearchUrl(q) {
+  return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(q);
+}
+function mapEmbedUrl(q) {
+  return "https://maps.google.com/maps?q=" + encodeURIComponent(q) + "&output=embed";
+}
+function fmtMoney(amount, cur) {
+  const sym = cur === "KRW" ? "₩" : cur === "JPY" ? "¥" : "$";
+  const frac = (cur === "KRW" || cur === "JPY") ? 0 : 2;
+  return sym + Number(amount).toLocaleString(undefined, { maximumFractionDigits: frac });
+}
+
+/* ---- rich memo: image compression + html sanitize ---- */
+// 붙여넣은 이미지를 긴 변 1000px / JPEG 0.72로 축소해 base64 dataURL로 반환
+function compressImage(file, maxSide = 1000, quality = 0.72) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        let { width: w, height: h } = img;
+        if (w > maxSide || h > maxSide) {
+          const r = Math.min(maxSide / w, maxSide / h);
+          w = Math.round(w * r); h = Math.round(h * r);
+        }
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        c.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(c.toDataURL("image/jpeg", quality));
+      };
+      img.onerror = reject;
+      img.src = reader.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+// contenteditable에 이미지 붙여넣기/드롭 시 압축본으로 삽입
+async function handleImagePaste(e) {
+  const items = (e.clipboardData || e.dataTransfer || {}).items || [];
+  const files = [];
+  for (const it of items) if (it.kind === "file" && it.type.startsWith("image/")) {
+    const f = it.getAsFile(); if (f) files.push(f);
+  }
+  if (!files.length) return;          // 일반 텍스트 붙여넣기는 기본 동작 유지
+  e.preventDefault();
+  for (const f of files) {
+    try {
+      const dataUrl = await compressImage(f);
+      document.execCommand("insertHTML", false, `<img src="${dataUrl}">`);
+    } catch (err) { console.warn("image insert failed", err); }
+  }
+}
+// 저장 전 허용 태그(img/br/p/div/b/i/strong/em)만 남기고 정리 — XSS 방지
+function sanitizeMemo(html) {
+  const tpl = document.createElement("div");
+  tpl.innerHTML = html;
+  const ALLOWED = { IMG: ["src", "alt"], BR: [], P: [], DIV: [], B: [], I: [], STRONG: [], EM: [] };
+  (function walk(node) {
+    [...node.childNodes].forEach(ch => {
+      if (ch.nodeType === 1) {
+        const tag = ch.tagName;
+        if (!ALLOWED[tag]) { ch.replaceWith(...ch.childNodes); walk(node); return; }
+        [...ch.attributes].forEach(a => { if (!ALLOWED[tag].includes(a.name)) ch.removeAttribute(a.name); });
+        // img는 data:image base64만 허용 (외부/스크립트 URL 차단)
+        if (tag === "IMG" && !/^data:image\//.test(ch.getAttribute("src") || "")) { ch.remove(); return; }
+        walk(ch);
+      } else if (ch.nodeType === 8) { ch.remove(); }  // 주석 제거
+    });
+  })(tpl);
+  return tpl.innerHTML;
+}
+function memoHasContent(html) {
+  const d = document.createElement("div"); d.innerHTML = html;
+  return !!(d.querySelector("img") || d.textContent.trim());
+}
+
+/* ---------------- render: overview ---------------- */
+function renderHero() {
+  const o = state.overview;
+  const total = daysBetween(o.startDate, o.endDate);
+  const range = o.startDate
+    ? `${fmtDate(o.startDate)} – ${fmtDate(o.endDate)}` + (total ? ` (${total - 1}박 ${total}일)` : "")
+    : "기간 미정";
+  document.getElementById("hero").innerHTML = `
+    <button class="sm edit-btn" onclick="openOverviewForm()">편집</button>
+    <div class="kicker">Travel Journal</div>
+    <h1>${esc(o.title) || "여행 제목"}</h1>
+    <div class="meta">
+      ${o.city ? `<span>📍 <b>${esc(o.city)}</b></span>` : ""}
+      <span>🗓️ ${esc(range)}</span>
+    </div>
+    ${o.startDate ? `<div class="dday">${esc(ddayLabel(o.startDate))}</div>` : ""}
+    ${o.memoHtml ? `<div class="memo">${o.memoHtml}</div>` : (o.memo ? `<div class="memo">${esc(o.memo)}</div>` : "")}
+  `;
+}
+
+/* ---------------- render: days ---------------- */
+function renderDays() {
+  const wrap = document.getElementById("days");
+  const days = [...state.days].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  document.getElementById("dayCount").textContent = days.length ? `${days.length}일` : "";
+  if (!days.length) {
+    wrap.innerHTML = `<div class="empty">아직 일정이 없습니다. “+ 날짜 추가”로 시작하세요.</div>`;
+    return;
+  }
+  wrap.innerHTML = days.map(day => {
+    const items = [...day.items].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+    const itemsHtml = items.length ? items.map(it => `
+      <div class="tl-item">
+        <div class="tl-top">
+          <span class="tl-time">${esc(it.time || "")}</span>
+          <span class="tl-place">${esc(it.place || "")}</span>
+        </div>
+        ${it.memoHtml ? `<div class="tl-memo">${it.memoHtml}</div>` : (it.memo ? `<div class="tl-memo">${esc(it.memo)}</div>` : "")}
+        <div class="tl-actions">
+          ${it.mapQuery ? `<a class="maplink" href="${esc(mapSearchUrl(it.mapQuery))}" target="_blank" rel="noopener">🗺️ 지도 열기</a>
+            <button class="ghost sm" onclick="toggleMap('${day.id}','${it.id}',this)">지도 보기</button>` : ""}
+          <button class="ghost sm" onclick="openItemForm('${day.id}','${it.id}')">수정</button>
+          <button class="ghost sm" onclick="delItem('${day.id}','${it.id}')">삭제</button>
+        </div>
+        <div class="map-frame" id="map-${day.id}-${it.id}" style="display:none"></div>
+      </div>
+    `).join("") : `<div class="empty">일정 항목이 없습니다.</div>`;
+
+    return `
+      <div class="day">
+        <div class="day-head">
+          <span class="date">${esc(fmtDate(day.date))}</span>
+          <span class="dow">${esc(dow(day.date))}</span>
+          <span class="sp"></span>
+          <button class="ghost sm" onclick="openItemForm('${day.id}')">+ 일정</button>
+          <button class="ghost sm" onclick="openDayForm('${day.id}')">날짜수정</button>
+          <button class="ghost sm" onclick="delDay('${day.id}')">삭제</button>
+        </div>
+        <div class="timeline">${itemsHtml}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+function toggleMap(dayId, itemId, btn) {
+  const el = document.getElementById(`map-${dayId}-${itemId}`);
+  const day = state.days.find(d => d.id === dayId);
+  const it = day && day.items.find(i => i.id === itemId);
+  if (!el || !it) return;
+  if (el.style.display === "none") {
+    el.innerHTML = `<iframe loading="lazy" src="${esc(mapEmbedUrl(it.mapQuery))}"></iframe>`;
+    el.style.display = "block";
+    btn.textContent = "지도 닫기";
+  } else {
+    el.style.display = "none"; el.innerHTML = "";
+    btn.textContent = "지도 보기";
+  }
+}
+
+/* ---------------- render: budget ---------------- */
+function toDisplay(amount, cur, displayCur, rate) {
+  if (cur === displayCur) return amount;       // rate = 1 JPY 당 KRW
+  if (cur === "JPY" && displayCur === "KRW") return amount * rate;
+  if (cur === "KRW" && displayCur === "JPY") return amount / rate;
+  return amount;
+}
+function renderBudget() {
+  const rate = Number(state.rate) || 9;
+  const displayCur = document.getElementById("displayCur").value;
+  const items = state.budget;
+
+  const byCat = {};
+  let total = 0;
+  for (const b of items) {
+    const v = toDisplay(Number(b.amount) || 0, b.currency, displayCur, rate);
+    byCat[b.category] = (byCat[b.category] || 0) + v;
+    total += v;
+  }
+
+  // summary cards: total + top categories
+  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
+  const summary = document.getElementById("budgetSummary");
+  summary.innerHTML = `
+    <div class="bcard">
+      <div class="lbl">총 예산</div>
+      <div class="val">${fmtMoney(total, displayCur)}</div>
+      <div class="sub">${items.length}개 항목 · ${cats.length}개 분류</div>
+    </div>
+    ${cats.slice(0, 3).map(([c, v]) => `
+      <div class="bcard">
+        <div class="lbl">${esc(c)}</div>
+        <div class="val" style="font-size:18px">${fmtMoney(v, displayCur)}</div>
+        <div class="sub">${total ? Math.round(v / total * 100) : 0}%</div>
+      </div>`).join("")}
+  `;
+
+  const table = document.getElementById("budgetTable");
+  if (!items.length) {
+    table.innerHTML = `<div class="empty">예산 항목이 없습니다.</div>`;
+    return;
+  }
+  table.innerHTML = `
+    <table class="budget">
+      <thead><tr><th>분류</th><th>항목</th><th style="text-align:right">금액(${displayCur})</th><th></th></tr></thead>
+      <tbody>
+        ${items.map(b => `
+          <tr>
+            <td><span class="cat-pill">${esc(b.category)}</span></td>
+            <td>${esc(b.label)}<div class="sub" style="color:var(--muted);font-size:12px">원금액 ${fmtMoney(b.amount, b.currency)}</div></td>
+            <td class="amt">${fmtMoney(toDisplay(Number(b.amount) || 0, b.currency, displayCur, rate), displayCur)}</td>
+            <td style="text-align:right;white-space:nowrap">
+              <button class="ghost sm" onclick="openBudgetForm('${b.id}')">수정</button>
+              <button class="ghost sm" onclick="delBudget('${b.id}')">삭제</button>
+            </td>
+          </tr>`).join("")}
+      </tbody>
+    </table>`;
+}
+function onRateChange() {
+  state.rate = Number(document.getElementById("rate").value) || 0;
+  // 사용자가 직접 고치면 수동으로 전환
+  state.autoRate = false;
+  state.rateSource = "수동";
+  const auto = document.getElementById("rateAuto");
+  if (auto) auto.checked = false;
+  localStorage.setItem(KEY, JSON.stringify(state));
+  renderRateStatus();
+  renderBudget();
+}
+
+/* ---- 실시간 환율 (JPY→KRW) ---- */
+const RATE_TTL = 60 * 60 * 1000;   // 1시간
+function renderRateStatus() {
+  const el = document.getElementById("rateStatus");
+  if (!el) return;
+  if (state.rateSource === "수동" || !state.rateUpdatedAt) {
+    el.textContent = state.rateSource === "수동" ? "· 수동 입력" : "";
+    return;
+  }
+  const d = new Date(state.rateUpdatedAt);
+  const hh = String(d.getHours()).padStart(2, "0");
+  const mm = String(d.getMinutes()).padStart(2, "0");
+  el.textContent = `· 실시간 ${hh}:${mm} 기준`;
+}
+// force=true면 캐시 무시하고 즉시 호출
+async function fetchRate(force) {
+  const fresh = state.rateUpdatedAt && (Date.now() - state.rateUpdatedAt < RATE_TTL);
+  if (!force && (!state.autoRate || fresh)) { renderRateStatus(); return; }
+  const el = document.getElementById("rateStatus");
+  if (el) el.textContent = "· 불러오는 중…";
+  try {
+    const res = await fetch("https://open.er-api.com/v6/latest/JPY");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const data = await res.json();
+    const krw = data && data.rates && data.rates.KRW;
+    if (!krw) throw new Error("KRW 없음");
+    state.rate = Math.round(krw * 100) / 100;   // 소수 2자리
+    state.rateUpdatedAt = Date.now();
+    state.rateSource = "실시간";
+    state.autoRate = true;
+    localStorage.setItem(KEY, JSON.stringify(state));
+    document.getElementById("rate").value = state.rate;
+    const auto = document.getElementById("rateAuto");
+    if (auto) auto.checked = true;
+    renderRateStatus();
+    renderBudget();
+  } catch (e) {
+    console.warn("rate fetch failed", e);
+    if (el) el.textContent = "· 환율 가져오기 실패(입력값 사용)";
+  }
+}
+function onAutoToggle() {
+  state.autoRate = document.getElementById("rateAuto").checked;
+  if (state.autoRate) {
+    state.rateSource = "실시간";
+    localStorage.setItem(KEY, JSON.stringify(state));
+    fetchRate(true);
+  } else {
+    state.rateSource = "수동";
+    localStorage.setItem(KEY, JSON.stringify(state));
+    renderRateStatus();
+  }
+}
+
+/* ---------------- render: links ---------------- */
+function renderLinks() {
+  const wrap = document.getElementById("links");
+  if (!state.links.length) {
+    wrap.innerHTML = `<div class="empty">저장된 링크가 없습니다.</div>`;
+    return;
+  }
+  const order = ["항공", "숙소", "맛집", "지도", "기타"];
+  const groups = {};
+  for (const l of state.links) (groups[l.category] = groups[l.category] || []).push(l);
+  const cats = Object.keys(groups).sort((a, b) => {
+    const ia = order.indexOf(a), ib = order.indexOf(b);
+    return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib);
+  });
+  wrap.innerHTML = cats.map(cat => `
+    <div class="link-group">
+      <h3>${esc(cat)}</h3>
+      <div class="link-list">
+        ${groups[cat].map(l => `
+          <div class="link-item">
+            <a href="${esc(l.url)}" target="_blank" rel="noopener">${esc(l.title)}</a>
+            <span class="url">${esc(l.url)}</span>
+            <button class="ghost sm" onclick="openLinkForm('${l.id}')">수정</button>
+            <button class="ghost sm" onclick="delLink('${l.id}')">삭제</button>
+          </div>`).join("")}
+      </div>
+    </div>`).join("");
+}
+
+/* ---------------- render all ---------------- */
+function renderAll() {
+  renderHero();
+  renderDays();
+  document.getElementById("rate").value = state.rate ?? 9;
+  document.getElementById("rateAuto").checked = state.autoRate !== false;
+  renderRateStatus();
+  renderBudget();
+  renderLinks();
+}
+
+/* ---------------- modal infra ---------------- */
+function openModal(html) {
+  document.getElementById("modal").innerHTML = html;
+  document.getElementById("modalBack").classList.add("open");
+}
+function closeModal() {
+  document.getElementById("modalBack").classList.remove("open");
+}
+document.getElementById("modalBack").addEventListener("click", e => {
+  if (e.target.id === "modalBack") closeModal();
+});
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal(); });
+const val = id => document.getElementById(id).value.trim();
+
+/* ---------------- overview form ---------------- */
+function openOverviewForm() {
+  const o = state.overview;
+  openModal(`
+    <h3>여행 개요 편집</h3>
+    <div class="field"><label>제목</label><input id="f_title" value="${esc(o.title)}"></div>
+    <div class="field"><label>도시</label><input id="f_city" value="${esc(o.city)}"></div>
+    <div class="field row2">
+      <div><label>시작일</label><input type="date" id="f_start" value="${esc(o.startDate)}"></div>
+      <div><label>종료일</label><input type="date" id="f_end" value="${esc(o.endDate)}"></div>
+    </div>
+    <div class="field">
+      <label>메모 · 사진</label>
+      <div id="f_memo" class="rich" contenteditable="true"
+           data-placeholder="글을 쓰고, 사진은 복사해서 붙여넣기(⌘V) 하세요">${o.memoHtml || esc(o.memo || "")}</div>
+      <div class="hint">📷 사진을 복사해 붙여넣으면 자동 압축되어 저장됩니다.</div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeModal()">취소</button>
+      <button class="primary" onclick="saveOverview()">저장</button>
+    </div>`);
+  const memoEl = document.getElementById("f_memo");
+  memoEl.addEventListener("paste", handleImagePaste);
+  memoEl.addEventListener("drop", handleImagePaste);
+}
+function saveOverview() {
+  state.overview = {
+    title: val("f_title"), city: val("f_city"),
+    startDate: val("f_start"), endDate: val("f_end"),
+    memoHtml: sanitizeMemo(document.getElementById("f_memo").innerHTML)
+  };
+  closeModal(); save();
+}
+
+/* ---------------- day form ---------------- */
+function openDayForm(dayId) {
+  const day = dayId ? state.days.find(d => d.id === dayId) : null;
+  openModal(`
+    <h3>${day ? "날짜 수정" : "날짜 추가"}</h3>
+    <div class="field"><label>날짜</label><input type="date" id="f_date" value="${esc(day ? day.date : "")}"></div>
+    <div class="modal-actions">
+      <button onclick="closeModal()">취소</button>
+      <button class="primary" onclick="saveDay('${dayId || ""}')">저장</button>
+    </div>`);
+}
+function saveDay(dayId) {
+  const date = val("f_date");
+  if (!date) { alert("날짜를 입력하세요."); return; }
+  if (dayId) {
+    state.days.find(d => d.id === dayId).date = date;
+  } else {
+    state.days.push({ id: uid(), date, items: [] });
+  }
+  closeModal(); save();
+}
+function delDay(dayId) {
+  if (!confirm("이 날짜와 모든 일정을 삭제할까요?")) return;
+  state.days = state.days.filter(d => d.id !== dayId);
+  save();
+}
+
+/* ---------------- item form ---------------- */
+function openItemForm(dayId, itemId) {
+  const day = state.days.find(d => d.id === dayId);
+  const it = itemId ? day.items.find(i => i.id === itemId) : null;
+  openModal(`
+    <h3>${it ? "일정 수정" : "일정 추가"} · ${esc(fmtDate(day.date))}</h3>
+    <div class="field row2">
+      <div><label>시간</label><input type="time" id="f_time" value="${esc(it ? it.time : "")}"></div>
+      <div><label>장소</label><input id="f_place" value="${esc(it ? it.place : "")}" placeholder="장소 이름"></div>
+    </div>
+    <div class="field">
+      <label>메모 · 사진</label>
+      <div id="f_imemo" class="rich" contenteditable="true"
+           data-placeholder="글을 쓰고, 사진은 복사해서 여기에 붙여넣기(⌘V) 하세요">${it ? (it.memoHtml || esc(it.memo || "")) : ""}</div>
+      <div class="hint">📷 사진을 복사한 뒤 메모 칸에 붙여넣으면 글 사이에 바로 삽입됩니다 (자동 압축 저장).</div>
+    </div>
+    <div class="field"><label>지도 검색어 (선택)</label><input id="f_map" value="${esc(it ? it.mapQuery : "")}" placeholder="예: Golden Gate Bridge"></div>
+    <div class="modal-actions">
+      <button onclick="closeModal()">취소</button>
+      <button class="primary" onclick="saveItem('${dayId}','${itemId || ""}')">저장</button>
+    </div>`);
+  const memoEl = document.getElementById("f_imemo");
+  memoEl.addEventListener("paste", handleImagePaste);
+  memoEl.addEventListener("drop", handleImagePaste);
+}
+function saveItem(dayId, itemId) {
+  const day = state.days.find(d => d.id === dayId);
+  const memoHtml = sanitizeMemo(document.getElementById("f_imemo").innerHTML);
+  const data = { time: val("f_time"), place: val("f_place"), memoHtml, mapQuery: val("f_map") };
+  if (!data.place) { alert("장소를 입력하세요."); return; }
+  if (itemId) {
+    const t = day.items.find(i => i.id === itemId);
+    delete t.memo;              // 구 평문 메모 제거 (memoHtml로 일원화)
+    Object.assign(t, data);
+  } else {
+    day.items.push({ id: uid(), ...data });
+  }
+  closeModal(); save();
+}
+function delItem(dayId, itemId) {
+  const day = state.days.find(d => d.id === dayId);
+  day.items = day.items.filter(i => i.id !== itemId);
+  save();
+}
+
+/* ---------------- budget form ---------------- */
+function openBudgetForm(id) {
+  const b = id ? state.budget.find(x => x.id === id) : null;
+  openModal(`
+    <h3>${b ? "예산 수정" : "예산 추가"}</h3>
+    <div class="field"><label>분류</label>
+      <input id="f_cat" list="catlist" value="${esc(b ? b.category : "")}" placeholder="항공 / 숙소 / 교통 / 식비 ...">
+      <datalist id="catlist">
+        <option>항공</option><option>숙소</option><option>교통</option>
+        <option>식비</option><option>관광</option><option>쇼핑</option><option>기타</option>
+      </datalist>
+    </div>
+    <div class="field"><label>항목명</label><input id="f_label" value="${esc(b ? b.label : "")}"></div>
+    <div class="field row2">
+      <div><label>금액</label><input type="number" id="f_amt" value="${esc(b ? b.amount : "")}" min="0" step="0.01"></div>
+      <div><label>통화</label>
+        <select id="f_cur">
+          <option value="JPY" ${b && b.currency === "JPY" ? "selected" : ""}>JPY (¥)</option>
+          <option value="KRW" ${b && b.currency === "KRW" ? "selected" : ""}>KRW (₩)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button onclick="closeModal()">취소</button>
+      <button class="primary" onclick="saveBudget('${id || ""}')">저장</button>
+    </div>`);
+}
+function saveBudget(id) {
+  const data = {
+    category: val("f_cat") || "기타", label: val("f_label"),
+    amount: Number(val("f_amt")) || 0, currency: document.getElementById("f_cur").value
+  };
+  if (!data.label) { alert("항목명을 입력하세요."); return; }
+  if (id) {
+    Object.assign(state.budget.find(x => x.id === id), data);
+  } else {
+    state.budget.push({ id: uid(), ...data });
+  }
+  closeModal(); save();
+}
+function delBudget(id) {
+  state.budget = state.budget.filter(x => x.id !== id);
+  save();
+}
+
+/* ---------------- link form ---------------- */
+function openLinkForm(id) {
+  const l = id ? state.links.find(x => x.id === id) : null;
+  openModal(`
+    <h3>${l ? "링크 수정" : "링크 추가"}</h3>
+    <div class="field"><label>분류</label>
+      <input id="f_lcat" list="lcatlist" value="${esc(l ? l.category : "")}" placeholder="항공 / 숙소 / 맛집 / 지도 / 기타">
+      <datalist id="lcatlist">
+        <option>항공</option><option>숙소</option><option>맛집</option><option>지도</option><option>기타</option>
+      </datalist>
+    </div>
+    <div class="field"><label>제목</label><input id="f_ltitle" value="${esc(l ? l.title : "")}"></div>
+    <div class="field"><label>URL</label><input id="f_lurl" value="${esc(l ? l.url : "")}" placeholder="https://..."></div>
+    <div class="modal-actions">
+      <button onclick="closeModal()">취소</button>
+      <button class="primary" onclick="saveLink('${id || ""}')">저장</button>
+    </div>`);
+}
+function saveLink(id) {
+  let url = val("f_lurl");
+  if (url && !/^https?:\/\//i.test(url)) url = "https://" + url;
+  const data = { category: val("f_lcat") || "기타", title: val("f_ltitle") || url, url };
+  if (!data.url) { alert("URL을 입력하세요."); return; }
+  if (id) {
+    Object.assign(state.links.find(x => x.id === id), data);
+  } else {
+    state.links.push({ id: uid(), ...data });
+  }
+  closeModal(); save();
+}
+function delLink(id) {
+  state.links = state.links.filter(x => x.id !== id);
+  save();
+}
+
+/* ---------------- import / export / reset ---------------- */
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "fukuoka-trip-planner.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importJSON(ev) {
+  const file = ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const data = JSON.parse(reader.result);
+      if (!data.overview || !Array.isArray(data.days)) throw new Error("형식 오류");
+      state = data;
+      state.budget = state.budget || [];
+      state.links = state.links || [];
+      state.rate = state.rate || 9;
+      if (state.autoRate === undefined) state.autoRate = true;
+      state.rateUpdatedAt = state.rateUpdatedAt || 0;
+      state.rateSource = state.rateSource || "";
+      save();
+      fetchRate(false);
+      alert("가져오기 완료!");
+    } catch (e) {
+      alert("가져오기 실패: " + e.message);
+    }
+    ev.target.value = "";
+  };
+  reader.readAsText(file);
+}
+function resetAll() {
+  if (!confirm("모든 데이터를 삭제하고 샘플로 되돌릴까요? (되돌릴 수 없습니다)")) return;
+  state = structuredClone(SEED);
+  save();
+}
+
+/* ---------------- init ---------------- */
+renderAll();
+// 자동 모드면 캐시(1시간) 확인 후 필요 시 실시간 환율 호출
+fetchRate(false);
+</script>
+</body>
+</html>
