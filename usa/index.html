@@ -202,9 +202,32 @@
   .empty { color: var(--muted); font-style: italic; padding: 8px 2px; }
 
   @media (max-width: 560px) {
+    .wrap { padding: 0 12px 100px; }
     .hero h1 { font-size: 26px; }
-    .hero { padding: 26px 20px; }
+    .hero { padding: 24px 18px; }
+    .toolbar { padding: 8px 12px; }
     .toolbar .brand { width: 100%; margin-bottom: 4px; }
+    /* 일정 항목: 시간/장소는 한 줄, 버튼은 아래 줄 우측 */
+    .tl-item { padding-left: 20px; }
+    .tl-actions { flex-basis: 100%; justify-content: flex-end; margin-left: 0; margin-top: 4px; }
+    /* 예산 한 줄: 항목명 한 줄, 금액·버튼 다음 줄 */
+    .erow .ecat { order: 0; }
+    .erow .elabel { order: 1; flex-basis: calc(100% - 60px); }
+    .erow .eamt { order: 2; }
+    .erow .ghost { order: 3; }
+    .bday { padding: 14px; }
+    .bday-head { gap: 6px; }
+    .bday-rate { margin-left: 0; flex-basis: 100%; }
+    .totalcard { gap: 16px; padding: 16px; }
+    .totalcard .big { font-size: 22px; }
+    /* 대시보드 표: 글자/여백 축소 + 가로 스크롤 허용 */
+    .dash-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table.dash th, table.dash td { padding: 7px 8px; font-size: 12px; }
+    /* 탭 버튼 폭 확보 */
+    .tab { padding: 9px 14px; font-size: 15px; }
+    /* 모달 폼 row2가 너무 좁으면 세로로 */
+    .modal .field.row2 { flex-wrap: wrap; }
+    .modal .field.row2 > div { flex: 1 1 130px; }
   }
 
   /* ===== 탭 ===== */
@@ -228,13 +251,18 @@
   .bday-rate { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); margin-left: auto; }
   .bday-rate input { width: 78px; }
   .bsub { text-align: right; font-size: 13px; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); }
-  .erow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .erow { display: flex; align-items: center; gap: 8px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 14px; flex-wrap: wrap; }
   .erow:last-child { border-bottom: 0; }
   .erow .ecat { flex: 0 0 auto; }
-  .erow .elabel { flex: 1; }
-  .erow .eamt { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+  .erow .elabel { flex: 1 1 120px; min-width: 0; overflow-wrap: anywhere; }
+  .erow .eamt { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; margin-left: auto; }
   .erow .eamt .won { font-weight: 600; }
   .erow .eamt .usd { color: var(--muted); font-size: 12px; }
+  .erow.excl .eamt .won { color: var(--muted); font-weight: 500; text-decoration: line-through; }
+  .epay { display: inline-block; font-size: 11px; color: var(--blue); border: 1px solid var(--line);
+    border-radius: 999px; padding: 0 7px; vertical-align: middle; }
+  .exbadge { display: inline-block; font-size: 11px; color: #8a6d3b; background: #fbf3df;
+    border-radius: 999px; padding: 1px 7px; vertical-align: middle; }
 
   /* ===== 인쇄 / PDF 저장용 ===== */
   @media print {
@@ -635,7 +663,7 @@ function renderDashboard() {
   const days = sortedDays();
   if (!days.length) { el.innerHTML = ""; return; }
   el.innerHTML = `
-    <table class="dash">
+    <div class="dash-wrap"><table class="dash">
       <thead><tr><th>날짜</th><th>요일</th><th>일정</th><th>주요 일정</th></tr></thead>
       <tbody>
         ${days.map(d => {
@@ -650,7 +678,7 @@ function renderDashboard() {
           </tr>`;
         }).join("")}
       </tbody>
-    </table>`;
+    </table></div>`;
 }
 
 function renderDays() {
@@ -786,9 +814,10 @@ function dayRate(dateKey) {
   return (d && Number(d.rate)) || Number(state.rate) || 1350;
 }
 function expenseRow(scope, dateKey, e) {
-  return `<div class="erow">
+  const excl = !!e.exclude;
+  return `<div class="erow${excl ? " excl" : ""}">
     <span class="ecat cat-pill">${esc(e.category)}</span>
-    <span class="elabel">${esc(e.label)}</span>
+    <span class="elabel">${esc(e.label)}${e.pay ? ` <span class="epay">${esc(e.pay)}</span>` : ""}${excl ? ` <span class="exbadge">합계제외</span>` : ""}</span>
     <span class="eamt"><span class="won">${wonFmt(e.krw)}</span> · <span class="usd">${usdFmt(e.usd)}</span></span>
     <button class="ghost sm" onclick="openExpenseForm('${scope}','${dateKey}','${e.id}')">수정</button>
     <button class="ghost sm" onclick="delExpense('${scope}','${dateKey}','${e.id}')">삭제</button>
@@ -799,15 +828,20 @@ function renderBudget() {
   const fixed = state.budget.fixed;
   const daily = state.budget.daily;
 
-  // 합계
-  let totKrw = 0, totUsd = 0;
-  fixed.forEach(e => { totKrw += Number(e.krw) || 0; totUsd += Number(e.usd) || 0; });
-  Object.values(daily).forEach(d => (d.items || []).forEach(e => { totKrw += Number(e.krw) || 0; totUsd += Number(e.usd) || 0; }));
+  // 합계 — 제외(환전 등)는 실지출에서 빼고 따로 집계
+  let totKrw = 0, totUsd = 0, exKrw = 0, exUsd = 0;
+  const tally = e => {
+    if (e.exclude) { exKrw += Number(e.krw) || 0; exUsd += Number(e.usd) || 0; }
+    else { totKrw += Number(e.krw) || 0; totUsd += Number(e.usd) || 0; }
+  };
+  fixed.forEach(tally);
+  Object.values(daily).forEach(d => (d.items || []).forEach(tally));
 
   document.getElementById("budgetTotal").innerHTML = `
     <div class="totalcard">
-      <div><div class="lbl">전체 합계 (원화)</div><div class="big">${wonFmt(totKrw)}</div></div>
-      <div><div class="lbl">전체 합계 (달러)</div><div class="big">${usdFmt(totUsd)}</div></div>
+      <div><div class="lbl">실지출 합계 (원화)</div><div class="big">${wonFmt(totKrw)}</div></div>
+      <div><div class="lbl">실지출 합계 (달러)</div><div class="big">${usdFmt(totUsd)}</div></div>
+      ${(exKrw || exUsd) ? `<div><div class="lbl">환전·제외 (참고)</div><div class="sub">${wonFmt(exKrw)} · ${usdFmt(exUsd)}</div></div>` : ""}
     </div>`;
 
   // 사전 예산
@@ -826,8 +860,11 @@ function renderBudget() {
   wrap.innerHTML = dateKeys.map(dk => {
     const bucket = daily[dk] || { rate: Number(state.rate) || 1350, items: [] };
     const items = bucket.items || [];
-    let dk_krw = 0, dk_usd = 0;
-    items.forEach(e => { dk_krw += Number(e.krw) || 0; dk_usd += Number(e.usd) || 0; });
+    let dk_krw = 0, dk_usd = 0, dkx_krw = 0;
+    items.forEach(e => {
+      if (e.exclude) { dkx_krw += Number(e.krw) || 0; }
+      else { dk_krw += Number(e.krw) || 0; dk_usd += Number(e.usd) || 0; }
+    });
     return `<div class="bday">
       <div class="bday-head">
         <span class="date">${esc(fmtDate(dk))}</span>
@@ -836,7 +873,7 @@ function renderBudget() {
         <button class="ghost sm" onclick="openExpenseForm('daily','${dk}')">+ 지출</button>
       </div>
       ${items.length ? items.map(e => expenseRow("daily", dk, e)).join("") : `<div class="empty" style="padding:4px 0">지출 없음</div>`}
-      <div class="bsub">소계 <b style="color:var(--ink)">${wonFmt(dk_krw)}</b> · ${usdFmt(dk_usd)}</div>
+      <div class="bsub">소계 <b style="color:var(--ink)">${wonFmt(dk_krw)}</b> · ${usdFmt(dk_usd)}${dkx_krw ? ` <span style="color:var(--muted)">· 제외 ${wonFmt(dkx_krw)}</span>` : ""}</div>
     </div>`;
   }).join("");
 }
@@ -1065,12 +1102,12 @@ function delItem(dayId, itemId) {
 }
 
 /* ---------------- expense form (지출 추가/수정) ---------------- */
-// 한쪽 통화를 입력하면 환율로 반대쪽을 채움 (반대쪽이 비어있을 때만 — 직접입력 우선)
+// 입력 중인 칸을 기준으로 반대쪽을 매번 재계산 (마지막 입력값 기준). 환율은 그날 환율.
 function autoFx(which, rate) {
   const k = document.getElementById("f_krw"), u = document.getElementById("f_usd");
-  if (!rate) return;
-  if (which === "krw") { if (!u.value && k.value) u.value = (Number(k.value) / rate).toFixed(2); }
-  else { if (!k.value && u.value) k.value = String(Math.round(Number(u.value) * rate)); }
+  if (!rate || !k || !u) return;
+  if (which === "krw") u.value = (k.value === "" ? "" : (Number(k.value) / rate).toFixed(2));
+  else k.value = (u.value === "" ? "" : String(Math.round(Number(u.value) * rate)));
 }
 function openExpenseForm(scope, dateKey, id) {
   let e = null;
@@ -1095,7 +1132,21 @@ function openExpenseForm(scope, dateKey, id) {
       <div><label>원화 (₩)</label><input type="number" id="f_krw" value="${e ? e.krw : ""}" min="0" step="1" oninput="autoFx('krw', ${rate})"></div>
       <div><label>달러 ($)</label><input type="number" id="f_usd" value="${e ? e.usd : ""}" min="0" step="0.01" oninput="autoFx('usd', ${rate})"></div>
     </div>
-    <div class="hint">환율 1 USD = ${rate} KRW 기준 — 한쪽만 입력하면 나머지가 자동 채워집니다 (직접 수정 가능).</div>
+    <div class="hint">환율 1 USD = ${rate} KRW 기준 — 입력 중인 칸을 기준으로 반대쪽이 자동 계산됩니다 (그날 환율은 위 ‘그날 환율’에서 변경).</div>
+    <div class="field row2">
+      <div><label>결제수단</label>
+        <select id="f_pay">
+          <option value="카드" ${(!e || e.pay === "카드" || !e.pay) ? "selected" : ""}>카드</option>
+          <option value="현금" ${e && e.pay === "현금" ? "selected" : ""}>현금</option>
+          <option value="기타" ${e && e.pay === "기타" ? "selected" : ""}>기타</option>
+        </select>
+      </div>
+      <div><label>&nbsp;</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding-top:8px">
+          <input type="checkbox" id="f_excl" ${e && e.exclude ? "checked" : ""}> 합계 제외 (환전·충전)
+        </label>
+      </div>
+    </div>
     <div class="modal-actions">
       <button onclick="closeModal()">취소</button>
       <button class="primary" onclick="saveExpense('${scope}','${dateKey}','${id || ""}')">저장</button>
@@ -1104,7 +1155,9 @@ function openExpenseForm(scope, dateKey, id) {
 function saveExpense(scope, dateKey, id) {
   const data = {
     category: val("f_cat") || "기타", label: val("f_label"),
-    krw: Number(val("f_krw")) || 0, usd: Number(val("f_usd")) || 0
+    krw: Number(val("f_krw")) || 0, usd: Number(val("f_usd")) || 0,
+    pay: document.getElementById("f_pay").value,
+    exclude: document.getElementById("f_excl").checked
   };
   if (!data.label) { alert("항목명을 입력하세요."); return; }
   if (scope === "fixed") {
