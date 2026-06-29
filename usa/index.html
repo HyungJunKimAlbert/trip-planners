@@ -112,11 +112,34 @@
   .rich:empty::before { content: attr(data-placeholder); color: var(--muted); }
   .rich img { max-width: 100%; border-radius: 8px; margin: 6px 0; display: block; }
   .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .tl-actions { display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap; align-items: center; }
+  .tl-actions { display: inline-flex; gap: 4px; margin-left: auto; flex-wrap: wrap; align-items: center; }
   .map-frame { margin-top: 10px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
   .map-frame iframe { width: 100%; height: 220px; border: 0; display: block; }
   a.maplink { color: var(--blue); text-decoration: none; font-size: 13px; }
   a.maplink:hover { text-decoration: underline; }
+  /* 날짜 접기 토글 / 카운트 */
+  .day-head .caret { font-size: 13px; padding: 2px 6px; color: var(--accent); }
+  .day-head .cnt { color: var(--muted); font-size: 12px; }
+  /* 메모 이미지 접기 토글 + 크기 */
+  .imgwrap { display: block; margin: 6px 0; }
+  .imgtoggle { font-size: 12px; color: var(--blue); background: transparent;
+    border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; margin-bottom: 4px; cursor: pointer; }
+  .imgtoggle:hover { border-color: var(--accent); color: var(--accent); }
+  /* 대시보드 요약표 */
+  table.dash { width: 100%; border-collapse: collapse; background: var(--card);
+    border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); margin-bottom: 18px; }
+  table.dash th, table.dash td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--line); font-size: 13px; }
+  table.dash th { background: #faf8f3; color: var(--muted); font-weight: 600; }
+  table.dash tr:last-child td { border-bottom: 0; }
+  table.dash tbody tr:hover { background: var(--accent-soft); }
+  table.dash .dcnt { text-align: center; color: var(--accent); font-weight: 700; }
+  /* 이미지 편집기: 선택/리사이즈 툴바 */
+  .rich img.sel { outline: 3px solid var(--accent); outline-offset: 1px; }
+  .rt-toolbar { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; margin-bottom: 6px; }
+  .rt-toolbar button { padding: 3px 9px; font-size: 13px; border-radius: 6px; }
+  .rt-sw { width: 20px; height: 20px; padding: 0; border-radius: 50%; border: 1px solid var(--line); cursor: pointer; }
+  .imgbar { display: none; gap: 4px; align-items: center; margin-bottom: 6px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+  .imgbar.show { display: flex; }
 
   /* ---- budget ---- */
   .budget-summary {
@@ -215,27 +238,32 @@
 
   /* ===== 인쇄 / PDF 저장용 ===== */
   @media print {
-    @page { margin: 14mm; }
-    body { background: #fff; }
-    .wrap { max-width: none; padding: 0; }
+    @page { margin: 12mm; }
+    html, body { background: #fff !important; width: auto; }
+    * { -webkit-print-color-adjust: exact; print-color-adjust: exact; box-shadow: none !important; }
+    .wrap { max-width: none !important; width: auto !important; padding: 0 !important; margin: 0 !important; }
     /* 인쇄 시 모든 탭 펼쳐 보임 */
     .tabbar { display: none !important; }
     .tab-panel { display: block !important; }
-    .bday-rate, .bday-head button, .erow button { display: none !important; }
-    .bday, .totalcard { break-inside: avoid; box-shadow: none !important; }
     /* 화면 전용 UI 숨김 */
-    .toolbar, #syncBadge,
-    .section-head button, .day-head button,
-    .tl-actions button, .rate-row button, .rate-row label,
+    .toolbar, #syncBadge, .imgtoggle,
+    .section-head button, .day-head button, .day-head .caret,
+    .tl-actions, .rate-row button, .rate-row label,
     .hero .edit-btn, .map-frame { display: none !important; }
-    /* 카드가 페이지 경계에서 잘리지 않게 */
-    .hero, .day, .bcard, table.budget, .link-group { break-inside: avoid; box-shadow: none !important; }
-    .day, .hero { border: 1px solid #ddd; }
-    .section { margin-top: 22px; }
+    /* 접힌 날짜/이미지도 인쇄 때는 모두 펼침 */
+    .timeline, .tl-memo img { display: block !important; }
+    /* 큰 카드(.day)는 페이지 넘김 허용, 작은 단위만 안 잘리게 */
+    .day, .section, .link-group { break-inside: auto; }
+    .tl-item, .bday, .bcard, .totalcard, .link-item, table.dash tr { break-inside: avoid; }
+    .day-head, .bday-head, h1, h2 { break-after: avoid; }
+    .hero, .day, .bday { border: 1px solid #ddd; }
+    .section { margin-top: 18px; }
     a { color: #000 !important; text-decoration: none; }
-    /* 링크 모음은 인쇄물에서 실제 주소가 보이도록 */
+    /* 가로 넘침/잘림 방지 */
+    .tl-memo, .erow, .link-item { overflow-wrap: anywhere; word-break: break-word; }
     .link-item .url { max-width: none; white-space: normal; color: #555; }
-    /* 지도 텍스트 링크 뒤에 URL 노출 안 함(가독성) */
+    .tl-memo img, .hero .memo img { max-width: 100% !important; max-height: 90vh; }
+    .erow { flex-wrap: wrap; }
   }
 </style>
 </head>
@@ -271,6 +299,7 @@
         <span class="sp"></span>
         <button class="sm primary" onclick="openDayForm()">+ 날짜 추가</button>
       </div>
+      <div id="dashboard"></div>
       <div id="days"></div>
     </div>
 
@@ -491,16 +520,39 @@ async function handleImagePaste(e) {
   }
 }
 // 저장 전 허용 태그(img/br/p/div/b/i/strong/em)만 남기고 정리 — XSS 방지
+// style 속성에서 허용 CSS 속성만 남김 (url()/expression 등 위험 값 차단)
+const STYLE_PROPS = ["color", "background-color", "font-size", "font-weight", "font-style", "text-decoration", "width"];
+function sanitizeStyle(style) {
+  return style.split(";").map(s => s.trim()).filter(Boolean).filter(decl => {
+    const i = decl.indexOf(":"); if (i < 0) return false;
+    const prop = decl.slice(0, i).trim().toLowerCase();
+    const val = decl.slice(i + 1).trim().toLowerCase();
+    if (!STYLE_PROPS.includes(prop)) return false;
+    if (/url\(|expression|javascript:|@import|<\//.test(val)) return false;
+    return true;
+  }).join("; ");
+}
 function sanitizeMemo(html) {
   const tpl = document.createElement("div");
   tpl.innerHTML = html;
-  const ALLOWED = { IMG: ["src", "alt"], BR: [], P: [], DIV: [], B: [], I: [], STRONG: [], EM: [] };
+  const ALLOWED = {
+    IMG: ["src", "alt", "style"], BR: [], P: ["style"], DIV: ["style"],
+    B: [], STRONG: [], I: [], EM: [], U: [], SPAN: ["style"], FONT: ["color", "size"]
+  };
+  const DROP = { SCRIPT: 1, STYLE: 1, NOSCRIPT: 1, IFRAME: 1, OBJECT: 1, EMBED: 1, TEMPLATE: 1, LINK: 1, META: 1 };
   (function walk(node) {
     [...node.childNodes].forEach(ch => {
       if (ch.nodeType === 1) {
         const tag = ch.tagName;
-        if (!ALLOWED[tag]) { ch.replaceWith(...ch.childNodes); walk(node); return; }
-        [...ch.attributes].forEach(a => { if (!ALLOWED[tag].includes(a.name)) ch.removeAttribute(a.name); });
+        if (!ALLOWED[tag]) {
+          if (DROP[tag]) { ch.remove(); return; }   // 위험 요소는 내용째 제거
+          const kids = [...ch.childNodes]; ch.replaceWith(...kids); kids.forEach(walk); return;
+        }
+        [...ch.attributes].forEach(a => { if (!ALLOWED[tag].includes(a.name.toLowerCase())) ch.removeAttribute(a.name); });
+        if (ch.hasAttribute("style")) {
+          const cleaned = sanitizeStyle(ch.getAttribute("style"));
+          if (cleaned) ch.setAttribute("style", cleaned); else ch.removeAttribute("style");
+        }
         // img는 data:image base64만 허용 (외부/스크립트 URL 차단)
         if (tag === "IMG" && !/^data:image\//.test(ch.getAttribute("src") || "")) { ch.remove(); return; }
         walk(ch);
@@ -508,6 +560,40 @@ function sanitizeMemo(html) {
     });
   })(tpl);
   return tpl.innerHTML;
+}
+
+/* ---- 메모 편집기: 서식 툴바 + 이미지 선택/리사이즈 ---- */
+function rtCmd(cmd, val) { document.execCommand(cmd, false, val); }
+let selImg = null;
+function rtSelectImg(img) {
+  if (selImg) selImg.classList.remove("sel");
+  selImg = img || null;
+  if (selImg) selImg.classList.add("sel");
+  document.querySelectorAll(".imgbar").forEach(b => b.classList.toggle("show", !!selImg));
+}
+function rtImgSize(w) { if (selImg) { if (w) selImg.style.width = w; else selImg.style.removeProperty("width"); } }
+function bindRich(el) {
+  el.addEventListener("paste", handleImagePaste);
+  el.addEventListener("drop", handleImagePaste);
+  el.addEventListener("click", e => rtSelectImg(e.target.tagName === "IMG" ? e.target : null));
+}
+function richToolbar() {
+  const colors = ["#2b2b2b", "#c0563a", "#3a6ea5", "#4a7c59", "#d39a00"];
+  return `
+    <div class="rt-toolbar">
+      <button type="button" onmousedown="event.preventDefault()" onclick="rtCmd('bold')" title="굵게"><b>B</b></button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="rtCmd('fontSize',2)">작게</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="rtCmd('fontSize',4)">보통</button>
+      <button type="button" onmousedown="event.preventDefault()" onclick="rtCmd('fontSize',6)">크게</button>
+      ${colors.map(c => `<button type="button" class="rt-sw" style="background:${c}" onmousedown="event.preventDefault()" onclick="rtCmd('foreColor','${c}')"></button>`).join("")}
+    </div>
+    <div class="imgbar">
+      🖼️ 선택한 사진:
+      <button type="button" class="sm" onclick="rtImgSize('25%')">작게</button>
+      <button type="button" class="sm" onclick="rtImgSize('50%')">중간</button>
+      <button type="button" class="sm" onclick="rtImgSize('75%')">크게</button>
+      <button type="button" class="sm" onclick="rtImgSize('')">원본</button>
+    </div>`;
 }
 function memoHasContent(html) {
   const d = document.createElement("div"); d.innerHTML = html;
@@ -535,47 +621,116 @@ function renderHero() {
 }
 
 /* ---------------- render: days ---------------- */
+const collapsedDays = new Set();   // 세션 내 접힌 날짜(day.id) — 재렌더에도 유지
+function sortedDays() {
+  return [...state.days].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+}
+function sortedItems(day) {
+  return [...day.items].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+}
+
+// 상단 대시보드 요약표
+function renderDashboard() {
+  const el = document.getElementById("dashboard");
+  const days = sortedDays();
+  if (!days.length) { el.innerHTML = ""; return; }
+  el.innerHTML = `
+    <table class="dash">
+      <thead><tr><th>날짜</th><th>요일</th><th>일정</th><th>주요 일정</th></tr></thead>
+      <tbody>
+        ${days.map(d => {
+          const items = sortedItems(d);
+          const places = items.map(i => esc(i.place || "")).filter(Boolean);
+          const summary = places.slice(0, 3).join(", ") + (places.length > 3 ? ` 외 ${places.length - 3}` : "");
+          return `<tr onclick="scrollToDay('${d.id}')">
+            <td>${esc(fmtDate(d.date))}</td>
+            <td>${esc(dow(d.date))}</td>
+            <td class="dcnt">${items.length}</td>
+            <td>${summary || "-"}</td>
+          </tr>`;
+        }).join("")}
+      </tbody>
+    </table>`;
+}
+
 function renderDays() {
+  renderDashboard();
   const wrap = document.getElementById("days");
-  const days = [...state.days].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
+  const days = sortedDays();
   document.getElementById("dayCount").textContent = days.length ? `${days.length}일` : "";
   if (!days.length) {
     wrap.innerHTML = `<div class="empty">아직 일정이 없습니다. “+ 날짜 추가”로 시작하세요.</div>`;
     return;
   }
   wrap.innerHTML = days.map(day => {
-    const items = [...day.items].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+    const collapsed = collapsedDays.has(day.id);
+    const items = sortedItems(day);
     const itemsHtml = items.length ? items.map(it => `
       <div class="tl-item">
         <div class="tl-top">
           <span class="tl-time">${esc(it.time || "")}</span>
           <span class="tl-place">${esc(it.place || "")}</span>
+          <span class="tl-actions">
+            ${it.mapQuery ? `<a class="maplink" href="${esc(mapSearchUrl(it.mapQuery))}" target="_blank" rel="noopener">🗺️ 지도</a>
+              <button class="ghost sm" onclick="toggleMap('${day.id}','${it.id}',this)">지도보기</button>` : ""}
+            <button class="ghost sm" onclick="openItemForm('${day.id}','${it.id}')">수정</button>
+            <button class="ghost sm" onclick="delItem('${day.id}','${it.id}')">삭제</button>
+          </span>
         </div>
         ${it.memoHtml ? `<div class="tl-memo">${it.memoHtml}</div>` : (it.memo ? `<div class="tl-memo">${esc(it.memo)}</div>` : "")}
-        <div class="tl-actions">
-          ${it.mapQuery ? `<a class="maplink" href="${esc(mapSearchUrl(it.mapQuery))}" target="_blank" rel="noopener">🗺️ 지도 열기</a>
-            <button class="ghost sm" onclick="toggleMap('${day.id}','${it.id}',this)">지도 보기</button>` : ""}
-          <button class="ghost sm" onclick="openItemForm('${day.id}','${it.id}')">수정</button>
-          <button class="ghost sm" onclick="delItem('${day.id}','${it.id}')">삭제</button>
-        </div>
         <div class="map-frame" id="map-${day.id}-${it.id}" style="display:none"></div>
       </div>
     `).join("") : `<div class="empty">일정 항목이 없습니다.</div>`;
 
     return `
-      <div class="day">
+      <div class="day" id="day-${day.id}">
         <div class="day-head">
+          <button class="ghost sm caret" onclick="toggleDayCollapse('${day.id}')" title="접기/펼치기">${collapsed ? "▸" : "▾"}</button>
           <span class="date">${esc(fmtDate(day.date))}</span>
           <span class="dow">${esc(dow(day.date))}</span>
+          <span class="cnt">${items.length}개</span>
           <span class="sp"></span>
           <button class="ghost sm" onclick="openItemForm('${day.id}')">+ 일정</button>
           <button class="ghost sm" onclick="openDayForm('${day.id}')">날짜수정</button>
           <button class="ghost sm" onclick="delDay('${day.id}')">삭제</button>
         </div>
-        <div class="timeline">${itemsHtml}</div>
+        <div class="timeline"${collapsed ? ' style="display:none"' : ""}>${itemsHtml}</div>
       </div>
     `;
   }).join("");
+  enhanceMemos();
+}
+
+function toggleDayCollapse(id) {
+  if (collapsedDays.has(id)) collapsedDays.delete(id); else collapsedDays.add(id);
+  renderDays();
+}
+function scrollToDay(id) {
+  switchTab("itinerary");
+  collapsedDays.delete(id);
+  renderDays();
+  const el = document.getElementById("day-" + id);
+  if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+// 읽기 화면 메모의 각 이미지를 접기/펼치기 토글로 감쌈 (저장 데이터는 불변)
+function enhanceMemos() {
+  document.querySelectorAll(".tl-memo img, .hero .memo img").forEach(img => {
+    if (img.dataset.enh || !img.parentNode) return;
+    img.dataset.enh = "1";
+    const wrap = document.createElement("span");
+    wrap.className = "imgwrap";
+    const btn = document.createElement("button");
+    btn.type = "button"; btn.className = "imgtoggle"; btn.textContent = "🖼️ 사진 접기";
+    img.parentNode.insertBefore(wrap, img);
+    wrap.appendChild(btn);
+    wrap.appendChild(img);
+    btn.addEventListener("click", () => {
+      const hidden = img.style.display === "none";
+      img.style.display = hidden ? "" : "none";
+      btn.textContent = hidden ? "🖼️ 사진 접기" : "🖼️ 사진 펼치기";
+    });
+  });
 }
 
 function toggleMap(dayId, itemId, btn) {
@@ -818,17 +973,16 @@ function openOverviewForm() {
     </div>
     <div class="field">
       <label>메모 · 사진</label>
+      ${richToolbar()}
       <div id="f_memo" class="rich" contenteditable="true"
            data-placeholder="글을 쓰고, 사진은 복사해서 붙여넣기(⌘V) 하세요">${o.memoHtml || esc(o.memo || "")}</div>
-      <div class="hint">📷 사진을 복사해 붙여넣으면 자동 압축되어 저장됩니다.</div>
+      <div class="hint">📷 사진 붙여넣기(⌘V) · 사진 클릭 후 크기 조절 · 위 툴바로 굵게/크기/색상.</div>
     </div>
     <div class="modal-actions">
       <button onclick="closeModal()">취소</button>
       <button class="primary" onclick="saveOverview()">저장</button>
     </div>`);
-  const memoEl = document.getElementById("f_memo");
-  memoEl.addEventListener("paste", handleImagePaste);
-  memoEl.addEventListener("drop", handleImagePaste);
+  bindRich(document.getElementById("f_memo"));
 }
 function saveOverview() {
   state.overview = {
@@ -878,18 +1032,17 @@ function openItemForm(dayId, itemId) {
     </div>
     <div class="field">
       <label>메모 · 사진</label>
+      ${richToolbar()}
       <div id="f_imemo" class="rich" contenteditable="true"
            data-placeholder="글을 쓰고, 사진은 복사해서 여기에 붙여넣기(⌘V) 하세요">${it ? (it.memoHtml || esc(it.memo || "")) : ""}</div>
-      <div class="hint">📷 사진을 복사한 뒤 메모 칸에 붙여넣으면 글 사이에 바로 삽입됩니다 (자동 압축 저장).</div>
+      <div class="hint">📷 사진 붙여넣기(⌘V) · 사진 클릭 후 크기(작게/중간/크게/원본) · 위 툴바로 굵게/크기/색상.</div>
     </div>
     <div class="field"><label>지도 검색어 (선택)</label><input id="f_map" value="${esc(it ? it.mapQuery : "")}" placeholder="예: Golden Gate Bridge"></div>
     <div class="modal-actions">
       <button onclick="closeModal()">취소</button>
       <button class="primary" onclick="saveItem('${dayId}','${itemId || ""}')">저장</button>
     </div>`);
-  const memoEl = document.getElementById("f_imemo");
-  memoEl.addEventListener("paste", handleImagePaste);
-  memoEl.addEventListener("drop", handleImagePaste);
+  bindRich(document.getElementById("f_imemo"));
 }
 function saveItem(dayId, itemId) {
   const day = state.days.find(d => d.id === dayId);
