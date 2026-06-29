@@ -97,9 +97,13 @@
     background: #fff; border: 2px solid var(--accent);
   }
   .tl-item + .tl-item { border-top: 1px dashed var(--line); }
-  .tl-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .tl-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; cursor: pointer; user-select: none; }
+  .tl-top:hover .tl-place { color: var(--accent); }
   .tl-time { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 52px; }
   .tl-place { font-weight: 600; }
+  .tl-hint { font-size: 12px; opacity: .8; }
+  .tl-caret { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .tl-detail { margin-top: 4px; }
   .tl-memo { color: #5a5a52; font-size: 14px; margin-top: 2px; white-space: pre-wrap; }
   .tl-memo img { max-width: 100%; border-radius: 8px; margin: 6px 0; display: block; }
   /* contenteditable rich memo editor */
@@ -112,7 +116,11 @@
   .rich:empty::before { content: attr(data-placeholder); color: var(--muted); }
   .rich img { max-width: 100%; border-radius: 8px; margin: 6px 0; display: block; }
   .field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; }
-  .tl-actions { display: inline-flex; gap: 4px; margin-left: auto; flex-wrap: wrap; align-items: center; }
+  /* 체크박스 한 줄 (결제수단 아래, 전체폭) */
+  .checkrow { display: flex; align-items: center; gap: 8px; margin: 4px 0 14px; cursor: pointer; font-size: 14px; }
+  .checkrow input { width: 16px; height: 16px; flex: 0 0 auto; margin: 0; }
+  .checkrow .muted { color: var(--muted); font-size: 12px; }
+  .tl-actions { display: flex; gap: 4px; margin-top: 8px; flex-wrap: wrap; align-items: center; }
   .map-frame { margin-top: 10px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); }
   .map-frame iframe { width: 100%; height: 220px; border: 0; display: block; }
   a.maplink { color: var(--blue); text-decoration: none; font-size: 13px; }
@@ -225,9 +233,13 @@
     table.dash th, table.dash td { padding: 7px 8px; font-size: 12px; }
     /* 탭 버튼 폭 확보 */
     .tab { padding: 9px 14px; font-size: 15px; }
-    /* 모달 폼 row2가 너무 좁으면 세로로 */
-    .modal .field.row2 { flex-wrap: wrap; }
-    .modal .field.row2 > div { flex: 1 1 130px; }
+    /* 모달: 화면 거의 꽉 차게 + 칸 겹침 방지 */
+    .modal-back { padding: 14px 8px; align-items: flex-start; }
+    .modal { padding: 18px 14px; max-width: none; }
+    .modal .field.row2 { flex-wrap: wrap; gap: 10px; }
+    .modal .field.row2 > div { flex: 1 1 100%; min-width: 0; }
+    .modal .field input, .modal .field select, .modal .rich { width: 100%; }
+    .rt-toolbar { gap: 6px; }
   }
 
   /* ===== 탭 ===== */
@@ -263,6 +275,12 @@
     border-radius: 999px; padding: 0 7px; vertical-align: middle; }
   .exbadge { display: inline-block; font-size: 11px; color: #8a6d3b; background: #fbf3df;
     border-radius: 999px; padding: 1px 7px; vertical-align: middle; }
+  /* 토스트 안내 (모바일 PDF 등) */
+  #toast { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); max-width: 90%;
+    background: #2b2b2b; color: #fff; padding: 12px 16px; border-radius: 10px; font-size: 13px;
+    box-shadow: 0 6px 24px rgba(0,0,0,.25); opacity: 0; pointer-events: none; transition: opacity .2s;
+    z-index: 200; line-height: 1.5; text-align: center; }
+  #toast.show { opacity: .97; }
 
   /* ===== 인쇄 / PDF 저장용 ===== */
   @media print {
@@ -274,10 +292,12 @@
     .tabbar { display: none !important; }
     .tab-panel { display: block !important; }
     /* 화면 전용 UI 숨김 */
-    .toolbar, #syncBadge, .imgtoggle,
+    .toolbar, #syncBadge, .imgtoggle, #toast,
     .section-head button, .day-head button, .day-head .caret,
-    .tl-actions, .rate-row button, .rate-row label,
+    .tl-actions, .tl-caret, .rate-row button, .rate-row label,
     .hero .edit-btn, .map-frame { display: none !important; }
+    /* 인쇄 때는 접힌 일정 항목도 모두 펼쳐 보임 */
+    .tl-detail { display: block !important; }
     /* 접힌 날짜/이미지도 인쇄 때는 모두 펼침 */
     .timeline, .tl-memo img { display: block !important; }
     /* 큰 카드(.day)는 페이지 넘김 허용, 작은 단위만 안 잘리게 */
@@ -300,10 +320,9 @@
 <div class="toolbar">
   <div class="brand">🇯🇵 <span>Fukuoka</span> Trip Planner</div>
   <span id="syncBadge" style="font-size:13px;color:#8a8a82">연결 중…</span>
-  <button class="sm" onclick="window.print()">📄 PDF로 저장</button>
+  <button class="sm" onclick="doPrint()">📄 PDF로 저장</button>
   <button class="sm" onclick="exportJSON()">JSON 내보내기</button>
   <button class="sm" onclick="document.getElementById('importFile').click()">가져오기</button>
-  <button class="sm" onclick="resetAll()">초기화</button>
   <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
 </div>
 
@@ -644,6 +663,7 @@ function renderHero() {
 
 /* ---------------- render: days ---------------- */
 const collapsedDays = new Set();   // 세션 내 접힌 날짜(day.id) — 재렌더에도 유지
+const expandedItems = new Set();   // 세부사항이 펼쳐진 일정 항목(it.id). 기본은 접힘
 function sortedDays() {
   return [...state.days].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
@@ -687,22 +707,31 @@ function renderDays() {
   wrap.innerHTML = days.map(day => {
     const collapsed = collapsedDays.has(day.id);
     const items = sortedItems(day);
-    const itemsHtml = items.length ? items.map(it => `
-      <div class="tl-item">
-        <div class="tl-top">
+    const itemsHtml = items.length ? items.map(it => {
+      const open = expandedItems.has(it.id);
+      const hasMemo = !!(it.memoHtml || it.memo);
+      const hint = `${it.mapQuery ? "📍" : ""}${hasMemo ? "📝" : ""}`;
+      const memoHtml = it.memoHtml ? `<div class="tl-memo">${it.memoHtml}</div>` : (it.memo ? `<div class="tl-memo">${esc(it.memo)}</div>` : "");
+      return `
+      <div class="tl-item${open ? " open" : ""}" id="item-${it.id}">
+        <div class="tl-top" onclick="toggleItem('${it.id}')">
           <span class="tl-time">${esc(it.time || "")}</span>
           <span class="tl-place">${esc(it.place || "")}</span>
-          <span class="tl-actions">
+          ${hint ? `<span class="tl-hint">${hint}</span>` : ""}
+          <span class="tl-caret">${open ? "▾" : "▸"}</span>
+        </div>
+        <div class="tl-detail"${open ? "" : ' style="display:none"'}>
+          ${memoHtml}
+          <div class="tl-actions">
             ${it.mapQuery ? `<a class="maplink" href="${esc(mapSearchUrl(it.mapQuery))}" target="_blank" rel="noopener">🗺️ 지도</a>
               <button class="ghost sm" onclick="toggleMap('${day.id}','${it.id}',this)">지도보기</button>` : ""}
             <button class="ghost sm" onclick="openItemForm('${day.id}','${it.id}')">수정</button>
             <button class="ghost sm" onclick="delItem('${day.id}','${it.id}')">삭제</button>
-          </span>
+          </div>
+          <div class="map-frame" id="map-${day.id}-${it.id}" style="display:none"></div>
         </div>
-        ${it.memoHtml ? `<div class="tl-memo">${it.memoHtml}</div>` : (it.memo ? `<div class="tl-memo">${esc(it.memo)}</div>` : "")}
-        <div class="map-frame" id="map-${day.id}-${it.id}" style="display:none"></div>
-      </div>
-    `).join("") : `<div class="empty">일정 항목이 없습니다.</div>`;
+      </div>`;
+    }).join("") : `<div class="empty">일정 항목이 없습니다.</div>`;
 
     return `
       <div class="day" id="day-${day.id}">
@@ -726,6 +755,16 @@ function renderDays() {
 function toggleDayCollapse(id) {
   if (collapsedDays.has(id)) collapsedDays.delete(id); else collapsedDays.add(id);
   renderDays();
+}
+// 일정 항목 세부사항 펼치기/접기 (DOM만 토글 — 렌더 유지)
+function toggleItem(id) {
+  const open = !expandedItems.has(id);
+  if (open) expandedItems.add(id); else expandedItems.delete(id);
+  const el = document.getElementById("item-" + id);
+  if (!el) return;
+  el.classList.toggle("open", open);
+  const d = el.querySelector(".tl-detail"); if (d) d.style.display = open ? "" : "none";
+  const c = el.querySelector(".tl-caret"); if (c) c.textContent = open ? "▾" : "▸";
 }
 function scrollToDay(id) {
   switchTab("itinerary");
@@ -1144,20 +1183,17 @@ function openExpenseForm(scope, dateKey, id) {
       <div><label>엔 (¥)</label><input type="number" id="f_usd" value="${e ? e.usd : ""}" min="0" step="0.01" oninput="autoFx('usd')"></div>
     </div>
     <div class="hint">환율은 오늘 기준이 기본값입니다. 직접 고치면 그 환율로 즉시 재계산되고, 한쪽 금액만 넣으면 나머지가 자동 계산됩니다.</div>
-    <div class="field row2">
-      <div><label>결제수단</label>
-        <select id="f_pay">
-          <option value="카드" ${(!e || e.pay === "카드" || !e.pay) ? "selected" : ""}>카드</option>
-          <option value="현금" ${e && e.pay === "현금" ? "selected" : ""}>현금</option>
-          <option value="기타" ${e && e.pay === "기타" ? "selected" : ""}>기타</option>
-        </select>
-      </div>
-      <div><label>&nbsp;</label>
-        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;padding-top:8px">
-          <input type="checkbox" id="f_excl" ${e && e.exclude ? "checked" : ""}> 합계 제외 (환전·충전)
-        </label>
-      </div>
+    <div class="field"><label>결제수단</label>
+      <select id="f_pay">
+        <option value="카드" ${(!e || e.pay === "카드" || !e.pay) ? "selected" : ""}>카드</option>
+        <option value="현금" ${e && e.pay === "현금" ? "selected" : ""}>현금</option>
+        <option value="기타" ${e && e.pay === "기타" ? "selected" : ""}>기타</option>
+      </select>
     </div>
+    <label class="checkrow">
+      <input type="checkbox" id="f_excl" ${e && e.exclude ? "checked" : ""}>
+      <span>합계에서 제외 <span class="muted">(환전·충전 등, 실지출에 안 더해짐)</span></span>
+    </label>
     <div class="modal-actions">
       <button onclick="closeModal()">취소</button>
       <button class="primary" onclick="saveExpense('${scope}','${dateKey}','${id || ""}')">저장</button>
@@ -1271,10 +1307,21 @@ function importJSON(ev) {
   };
   reader.readAsText(file);
 }
-function resetAll() {
-  if (!confirm("모든 데이터를 삭제하고 샘플로 되돌릴까요? (되돌릴 수 없습니다)")) return;
-  state = structuredClone(SEED);
-  save();
+/* ---- PDF 저장 (모바일 안내 포함) ---- */
+function toast(msg) {
+  let t = document.getElementById("toast");
+  if (!t) { t = document.createElement("div"); t.id = "toast"; document.body.appendChild(t); }
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove("show"), 6000);
+}
+function doPrint() {
+  try { window.print(); } catch (_) {}
+  // 모바일에서 인쇄창이 안 뜨는 경우(앱 내 브라우저 등) 안내
+  if (window.matchMedia && window.matchMedia("(max-width: 760px)").matches) {
+    toast("인쇄창이 안 열리면: 브라우저 공유/메뉴 → ‘인쇄(Print)’ → PDF로 저장. Safari·Chrome 권장 (카카오톡 등 앱 안 브라우저는 미지원 — Safari로 열어주세요).");
+  }
 }
 
 /* ---------------- init ---------------- */
