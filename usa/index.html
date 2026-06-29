@@ -204,10 +204,11 @@
   .field input, .field select, .field textarea {
     width: 100%; font: inherit; padding: 8px 10px; border: 1px solid var(--line);
     border-radius: 8px; background: #fff; color: var(--ink);
+    box-sizing: border-box; min-width: 0; max-width: 100%;
   }
   .field textarea { resize: vertical; min-height: 64px; }
   .field.row2 { display: flex; gap: 10px; }
-  .field.row2 > div { flex: 1; }
+  .field.row2 > div { flex: 1; min-width: 0; }
   .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
 
   .empty { color: var(--muted); font-style: italic; padding: 8px 2px; }
