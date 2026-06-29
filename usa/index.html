@@ -184,11 +184,45 @@
     .toolbar .brand { width: 100%; margin-bottom: 4px; }
   }
 
+  /* ===== 탭 ===== */
+  .tabbar { display: flex; gap: 6px; margin: 26px 0 0; border-bottom: 2px solid var(--line); }
+  .tab { background: transparent; border: 0; border-bottom: 3px solid transparent; border-radius: 0;
+    padding: 10px 18px; font-size: 16px; font-weight: 600; color: var(--muted); margin-bottom: -2px; cursor: pointer; }
+  .tab:hover { color: var(--accent); }
+  .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ===== 예산: 합계/날짜블록 ===== */
+  .totalcard { background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 14px;
+    padding: 18px 22px; margin: 20px 0; display: flex; gap: 28px; flex-wrap: wrap; align-items: flex-end; }
+  .totalcard .lbl { color: var(--accent); font-weight: 600; font-size: 13px; }
+  .totalcard .big { font-size: 26px; font-weight: 800; color: var(--accent); letter-spacing: -.5px; }
+  .totalcard .sub { color: #9a5a48; font-size: 13px; }
+  .bday { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: var(--shadow); padding: 16px 18px; margin-bottom: 14px; }
+  .bday-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 6px; }
+  .bday-head .date { font-weight: 700; }
+  .bday-head .dow { color: var(--muted); font-size: 13px; }
+  .bday-rate { display: flex; align-items: center; gap: 4px; font-size: 12px; color: var(--muted); margin-left: auto; }
+  .bday-rate input { width: 78px; }
+  .bsub { text-align: right; font-size: 13px; color: var(--muted); margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--line); }
+  .erow { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px dashed var(--line); font-size: 14px; }
+  .erow:last-child { border-bottom: 0; }
+  .erow .ecat { flex: 0 0 auto; }
+  .erow .elabel { flex: 1; }
+  .erow .eamt { font-variant-numeric: tabular-nums; white-space: nowrap; text-align: right; }
+  .erow .eamt .won { font-weight: 600; }
+  .erow .eamt .usd { color: var(--muted); font-size: 12px; }
+
   /* ===== 인쇄 / PDF 저장용 ===== */
   @media print {
     @page { margin: 14mm; }
     body { background: #fff; }
     .wrap { max-width: none; padding: 0; }
+    /* 인쇄 시 모든 탭 펼쳐 보임 */
+    .tabbar { display: none !important; }
+    .tab-panel { display: block !important; }
+    .bday-rate, .bday-head button, .erow button { display: none !important; }
+    .bday, .totalcard { break-inside: avoid; box-shadow: none !important; }
     /* 화면 전용 UI 숨김 */
     .toolbar, #syncBadge,
     .section-head button, .day-head button,
@@ -222,51 +256,64 @@
   <!-- ===== OVERVIEW / HERO ===== -->
   <div class="hero" id="hero"><!-- rendered --></div>
 
-  <!-- ===== ITINERARY ===== -->
-  <div class="section">
-    <div class="section-head">
-      <h2>📅 일정표</h2>
-      <span class="count" id="dayCount"></span>
-      <span class="sp"></span>
-      <button class="sm primary" onclick="openDayForm()">+ 날짜 추가</button>
-    </div>
-    <div id="days"></div>
+  <!-- ===== TAB BAR ===== -->
+  <div class="tabbar">
+    <button class="tab active" id="tabbtn-itinerary" onclick="switchTab('itinerary')">📅 일정표</button>
+    <button class="tab" id="tabbtn-budget" onclick="switchTab('budget')">💰 예산</button>
   </div>
 
-  <!-- ===== BUDGET ===== -->
-  <div class="section">
-    <div class="section-head">
-      <h2>💰 예산</h2>
-      <span class="sp"></span>
-      <button class="sm primary" onclick="openBudgetForm()">+ 항목 추가</button>
+  <!-- ===== TAB: ITINERARY (+ LINKS) ===== -->
+  <div class="tab-panel" id="tab-itinerary">
+    <div class="section">
+      <div class="section-head">
+        <h2>📅 일정표</h2>
+        <span class="count" id="dayCount"></span>
+        <span class="sp"></span>
+        <button class="sm primary" onclick="openDayForm()">+ 날짜 추가</button>
+      </div>
+      <div id="days"></div>
     </div>
-    <div class="rate-row">
-      환율 <b style="color:var(--ink)">1 USD =</b>
-      <input type="number" id="rate" value="1350" min="0" step="0.01" oninput="onRateChange()"> KRW
-      <button class="sm" id="rateRefresh" onclick="fetchRate(true)" title="실시간 환율 가져오기">🔄</button>
-      <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
-        <input type="checkbox" id="rateAuto" onchange="onAutoToggle()"> 자동
-      </label>
-      <span id="rateStatus" style="font-size:12px;color:var(--muted)"></span>
-      <span style="margin-left:auto"></span>
-      표시 통화:
-      <select id="displayCur" onchange="renderBudget()" style="font:inherit;padding:4px 8px;border-radius:6px;border:1px solid var(--line)">
-        <option value="USD">USD ($)</option>
-        <option value="KRW">KRW (₩)</option>
-      </select>
+
+    <div class="section">
+      <div class="section-head">
+        <h2>🔗 링크 모음</h2>
+        <span class="sp"></span>
+        <button class="sm primary" onclick="openLinkForm()">+ 링크 추가</button>
+      </div>
+      <div id="links"></div>
     </div>
-    <div class="budget-summary" id="budgetSummary"></div>
-    <div id="budgetTable"></div>
   </div>
 
-  <!-- ===== LINKS ===== -->
-  <div class="section">
-    <div class="section-head">
-      <h2>🔗 링크 모음</h2>
-      <span class="sp"></span>
-      <button class="sm primary" onclick="openLinkForm()">+ 링크 추가</button>
+  <!-- ===== TAB: BUDGET ===== -->
+  <div class="tab-panel" id="tab-budget" style="display:none">
+    <div class="section">
+      <div class="rate-row">
+        기본 환율 <b style="color:var(--ink)">1 USD =</b>
+        <input type="number" id="rate" value="1350" min="0" step="0.01" oninput="onRateChange()"> KRW
+        <button class="sm" id="rateRefresh" onclick="fetchRate(true)" title="실시간 환율 가져오기">🔄</button>
+        <label style="display:flex;align-items:center;gap:4px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="rateAuto" onchange="onAutoToggle()"> 자동
+        </label>
+        <span id="rateStatus" style="font-size:12px;color:var(--muted)"></span>
+      </div>
+
+      <!-- 전체 합계 -->
+      <div id="budgetTotal"></div>
+
+      <!-- 사전 예산 (날짜 무관) -->
+      <div class="section-head" style="margin-top:6px">
+        <h2 style="font-size:18px">🧳 사전 예산 <span style="font-weight:400;color:var(--muted);font-size:14px">(항공·숙소 등 날짜 무관)</span></h2>
+        <span class="sp"></span>
+        <button class="sm primary" onclick="openExpenseForm('fixed')">+ 항목 추가</button>
+      </div>
+      <div class="bday" id="budgetFixed"></div>
+
+      <!-- 날짜별 지출 -->
+      <div class="section-head" style="margin-top:18px">
+        <h2 style="font-size:18px">📆 날짜별 지출 <span style="font-weight:400;color:var(--muted);font-size:14px">(식비·교통 등)</span></h2>
+      </div>
+      <div id="budgetDaily"></div>
     </div>
-    <div id="links"></div>
   </div>
 
 </div>
@@ -328,11 +375,14 @@ const SEED = {
       ]
     }
   ],
-  budget: [
-    { id: uid(), category: "항공", label: "왕복 항공권 2인", amount: 2400, currency: "USD" },
-    { id: uid(), category: "숙소", label: "라스베가스 호텔 3박", amount: 540, currency: "USD" },
-    { id: uid(), category: "숙소", label: "LA 호텔 6박", amount: 1080, currency: "USD" }
-  ],
+  budget: {
+    fixed: [
+      { id: uid(), category: "항공", label: "왕복 항공권 2인", krw: 3240000, usd: 2400 },
+      { id: uid(), category: "숙소", label: "라스베가스 호텔 3박", krw: 729000, usd: 540 },
+      { id: uid(), category: "숙소", label: "LA 호텔 6박", krw: 1458000, usd: 1080 }
+    ],
+    daily: {}
+  },
   links: [
     { id: uid(), category: "항공", title: "항공권 예약 확인", url: "https://www.google.com/travel/flights" },
     { id: uid(), category: "숙소", title: "Booking.com 예약", url: "https://www.booking.com" },
@@ -543,64 +593,97 @@ function toggleMap(dayId, itemId, btn) {
   }
 }
 
+/* ---------------- 탭 전환 ---------------- */
+function switchTab(name) {
+  ["itinerary", "budget"].forEach(n => {
+    document.getElementById("tab-" + n).style.display = (n === name) ? "block" : "none";
+    document.getElementById("tabbtn-" + n).classList.toggle("active", n === name);
+  });
+}
+
 /* ---------------- render: budget ---------------- */
-function toDisplay(amount, cur, displayCur, rate) {
-  if (cur === displayCur) return amount;
-  if (cur === "USD" && displayCur === "KRW") return amount * rate;
-  if (cur === "KRW" && displayCur === "USD") return amount / rate;
-  return amount;
+const wonFmt = (n) => "₩" + Math.round(Number(n) || 0).toLocaleString();
+const usdFmt = (n) => "$" + (Number(n) || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+// 구 형식(배열) → 신 형식(객체) 1회 변환. 여러 번 호출해도 안전(멱등).
+function normalizeBudget() {
+  const rate = Number(state.rate) || 1350;
+  let b = state.budget;
+  if (Array.isArray(b)) {
+    state.budget = {
+      fixed: b.map(o => {
+        const amt = Number(o.amount) || 0;
+        const krw = o.currency === "KRW" ? amt : Math.round(amt * rate);
+        const usd = o.currency === "KRW" ? Math.round(amt / rate * 100) / 100 : amt;
+        return { id: o.id || uid(), category: o.category || "기타", label: o.label || "", krw, usd };
+      }),
+      daily: {}
+    };
+  } else if (!b || typeof b !== "object") {
+    state.budget = { fixed: [], daily: {} };
+  } else {
+    if (!Array.isArray(b.fixed)) b.fixed = [];
+    if (!b.daily || typeof b.daily !== "object") b.daily = {};
+  }
+}
+function dayRate(dateKey) {
+  const d = state.budget.daily[dateKey];
+  return (d && Number(d.rate)) || Number(state.rate) || 1350;
+}
+function expenseRow(scope, dateKey, e) {
+  return `<div class="erow">
+    <span class="ecat cat-pill">${esc(e.category)}</span>
+    <span class="elabel">${esc(e.label)}</span>
+    <span class="eamt"><span class="won">${wonFmt(e.krw)}</span> · <span class="usd">${usdFmt(e.usd)}</span></span>
+    <button class="ghost sm" onclick="openExpenseForm('${scope}','${dateKey}','${e.id}')">수정</button>
+    <button class="ghost sm" onclick="delExpense('${scope}','${dateKey}','${e.id}')">삭제</button>
+  </div>`;
 }
 function renderBudget() {
-  const rate = Number(state.rate) || 1350;
-  const displayCur = document.getElementById("displayCur").value;
-  const items = state.budget;
+  normalizeBudget();
+  const fixed = state.budget.fixed;
+  const daily = state.budget.daily;
 
-  const byCat = {};
-  let total = 0;
-  for (const b of items) {
-    const v = toDisplay(Number(b.amount) || 0, b.currency, displayCur, rate);
-    byCat[b.category] = (byCat[b.category] || 0) + v;
-    total += v;
-  }
+  // 합계
+  let totKrw = 0, totUsd = 0;
+  fixed.forEach(e => { totKrw += Number(e.krw) || 0; totUsd += Number(e.usd) || 0; });
+  Object.values(daily).forEach(d => (d.items || []).forEach(e => { totKrw += Number(e.krw) || 0; totUsd += Number(e.usd) || 0; }));
 
-  // summary cards: total + top categories
-  const cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
-  const summary = document.getElementById("budgetSummary");
-  summary.innerHTML = `
-    <div class="bcard">
-      <div class="lbl">총 예산</div>
-      <div class="val">${fmtMoney(total, displayCur)}</div>
-      <div class="sub">${items.length}개 항목 · ${cats.length}개 분류</div>
-    </div>
-    ${cats.slice(0, 3).map(([c, v]) => `
-      <div class="bcard">
-        <div class="lbl">${esc(c)}</div>
-        <div class="val" style="font-size:18px">${fmtMoney(v, displayCur)}</div>
-        <div class="sub">${total ? Math.round(v / total * 100) : 0}%</div>
-      </div>`).join("")}
-  `;
+  document.getElementById("budgetTotal").innerHTML = `
+    <div class="totalcard">
+      <div><div class="lbl">전체 합계 (원화)</div><div class="big">${wonFmt(totKrw)}</div></div>
+      <div><div class="lbl">전체 합계 (달러)</div><div class="big">${usdFmt(totUsd)}</div></div>
+    </div>`;
 
-  const table = document.getElementById("budgetTable");
-  if (!items.length) {
-    table.innerHTML = `<div class="empty">예산 항목이 없습니다.</div>`;
+  // 사전 예산
+  document.getElementById("budgetFixed").innerHTML = fixed.length
+    ? fixed.map(e => expenseRow("fixed", "", e)).join("")
+    : `<div class="empty">사전 예산 항목이 없습니다.</div>`;
+
+  // 날짜별 지출: 일정표 날짜 + 지출만 있는 날짜의 합집합, 날짜순
+  const dateKeys = [...new Set([...state.days.map(d => d.date), ...Object.keys(daily)])]
+    .filter(Boolean).sort((a, b) => a.localeCompare(b));
+  const wrap = document.getElementById("budgetDaily");
+  if (!dateKeys.length) {
+    wrap.innerHTML = `<div class="empty">날짜가 없습니다. 일정표에서 날짜를 먼저 추가하세요.</div>`;
     return;
   }
-  table.innerHTML = `
-    <table class="budget">
-      <thead><tr><th>분류</th><th>항목</th><th style="text-align:right">금액(${displayCur})</th><th></th></tr></thead>
-      <tbody>
-        ${items.map(b => `
-          <tr>
-            <td><span class="cat-pill">${esc(b.category)}</span></td>
-            <td>${esc(b.label)}<div class="sub" style="color:var(--muted);font-size:12px">원금액 ${fmtMoney(b.amount, b.currency)}</div></td>
-            <td class="amt">${fmtMoney(toDisplay(Number(b.amount) || 0, b.currency, displayCur, rate), displayCur)}</td>
-            <td style="text-align:right;white-space:nowrap">
-              <button class="ghost sm" onclick="openBudgetForm('${b.id}')">수정</button>
-              <button class="ghost sm" onclick="delBudget('${b.id}')">삭제</button>
-            </td>
-          </tr>`).join("")}
-      </tbody>
-    </table>`;
+  wrap.innerHTML = dateKeys.map(dk => {
+    const bucket = daily[dk] || { rate: Number(state.rate) || 1350, items: [] };
+    const items = bucket.items || [];
+    let dk_krw = 0, dk_usd = 0;
+    items.forEach(e => { dk_krw += Number(e.krw) || 0; dk_usd += Number(e.usd) || 0; });
+    return `<div class="bday">
+      <div class="bday-head">
+        <span class="date">${esc(fmtDate(dk))}</span>
+        <span class="dow">${esc(dow(dk))}</span>
+        <span class="bday-rate">그날 환율 1$=<input type="number" min="0" step="0.01" value="${dayRate(dk)}" onchange="onDayRateChange('${dk}', this.value)">원</span>
+        <button class="ghost sm" onclick="openExpenseForm('daily','${dk}')">+ 지출</button>
+      </div>
+      ${items.length ? items.map(e => expenseRow("daily", dk, e)).join("") : `<div class="empty" style="padding:4px 0">지출 없음</div>`}
+      <div class="bsub">소계 <b style="color:var(--ink)">${wonFmt(dk_krw)}</b> · ${usdFmt(dk_usd)}</div>
+    </div>`;
+  }).join("");
 }
 function onRateChange() {
   state.rate = Number(document.getElementById("rate").value) || 0;
@@ -828,48 +911,74 @@ function delItem(dayId, itemId) {
   save();
 }
 
-/* ---------------- budget form ---------------- */
-function openBudgetForm(id) {
-  const b = id ? state.budget.find(x => x.id === id) : null;
+/* ---------------- expense form (지출 추가/수정) ---------------- */
+// 한쪽 통화를 입력하면 환율로 반대쪽을 채움 (반대쪽이 비어있을 때만 — 직접입력 우선)
+function autoFx(which, rate) {
+  const k = document.getElementById("f_krw"), u = document.getElementById("f_usd");
+  if (!rate) return;
+  if (which === "krw") { if (!u.value && k.value) u.value = (Number(k.value) / rate).toFixed(2); }
+  else { if (!k.value && u.value) k.value = String(Math.round(Number(u.value) * rate)); }
+}
+function openExpenseForm(scope, dateKey, id) {
+  let e = null;
+  if (id) {
+    e = scope === "fixed"
+      ? state.budget.fixed.find(x => x.id === id)
+      : (state.budget.daily[dateKey] && state.budget.daily[dateKey].items.find(x => x.id === id));
+  }
+  const rate = scope === "daily" ? dayRate(dateKey) : (Number(state.rate) || 1350);
+  const where = scope === "daily" ? fmtDate(dateKey) + " 지출" : "사전 예산";
   openModal(`
-    <h3>${b ? "예산 수정" : "예산 추가"}</h3>
+    <h3>${e ? "지출 수정" : "지출 추가"} · ${esc(where)}</h3>
     <div class="field"><label>분류</label>
-      <input id="f_cat" list="catlist" value="${esc(b ? b.category : "")}" placeholder="항공 / 숙소 / 교통 / 식비 ...">
+      <input id="f_cat" list="catlist" value="${esc(e ? e.category : "")}" placeholder="식비 / 교통 / 관광 / 쇼핑 ...">
       <datalist id="catlist">
         <option>항공</option><option>숙소</option><option>교통</option>
         <option>식비</option><option>관광</option><option>쇼핑</option><option>기타</option>
       </datalist>
     </div>
-    <div class="field"><label>항목명</label><input id="f_label" value="${esc(b ? b.label : "")}"></div>
+    <div class="field"><label>항목명</label><input id="f_label" value="${esc(e ? e.label : "")}" placeholder="예: 점심 라멘"></div>
     <div class="field row2">
-      <div><label>금액</label><input type="number" id="f_amt" value="${esc(b ? b.amount : "")}" min="0" step="0.01"></div>
-      <div><label>통화</label>
-        <select id="f_cur">
-          <option value="USD" ${b && b.currency === "USD" ? "selected" : ""}>USD ($)</option>
-          <option value="KRW" ${b && b.currency === "KRW" ? "selected" : ""}>KRW (₩)</option>
-        </select>
-      </div>
+      <div><label>원화 (₩)</label><input type="number" id="f_krw" value="${e ? e.krw : ""}" min="0" step="1" oninput="autoFx('krw', ${rate})"></div>
+      <div><label>달러 ($)</label><input type="number" id="f_usd" value="${e ? e.usd : ""}" min="0" step="0.01" oninput="autoFx('usd', ${rate})"></div>
     </div>
+    <div class="hint">환율 1 USD = ${rate} KRW 기준 — 한쪽만 입력하면 나머지가 자동 채워집니다 (직접 수정 가능).</div>
     <div class="modal-actions">
       <button onclick="closeModal()">취소</button>
-      <button class="primary" onclick="saveBudget('${id || ""}')">저장</button>
+      <button class="primary" onclick="saveExpense('${scope}','${dateKey}','${id || ""}')">저장</button>
     </div>`);
 }
-function saveBudget(id) {
+function saveExpense(scope, dateKey, id) {
   const data = {
     category: val("f_cat") || "기타", label: val("f_label"),
-    amount: Number(val("f_amt")) || 0, currency: document.getElementById("f_cur").value
+    krw: Number(val("f_krw")) || 0, usd: Number(val("f_usd")) || 0
   };
   if (!data.label) { alert("항목명을 입력하세요."); return; }
-  if (id) {
-    Object.assign(state.budget.find(x => x.id === id), data);
+  if (scope === "fixed") {
+    if (id) Object.assign(state.budget.fixed.find(x => x.id === id), data);
+    else state.budget.fixed.push({ id: uid(), ...data });
   } else {
-    state.budget.push({ id: uid(), ...data });
+    const bucket = state.budget.daily[dateKey] ||
+      (state.budget.daily[dateKey] = { rate: Number(state.rate) || 1350, items: [] });
+    if (id) Object.assign(bucket.items.find(x => x.id === id), data);
+    else bucket.items.push({ id: uid(), ...data });
   }
   closeModal(); save();
 }
-function delBudget(id) {
-  state.budget = state.budget.filter(x => x.id !== id);
+function delExpense(scope, dateKey, id) {
+  if (scope === "fixed") {
+    state.budget.fixed = state.budget.fixed.filter(x => x.id !== id);
+  } else {
+    const b = state.budget.daily[dateKey];
+    if (b) b.items = b.items.filter(x => x.id !== id);
+  }
+  save();
+}
+function onDayRateChange(dateKey, v) {
+  const r = Number(v) || 0;
+  const b = state.budget.daily[dateKey] ||
+    (state.budget.daily[dateKey] = { rate: r, items: [] });
+  b.rate = r;
   save();
 }
 
