@@ -1096,12 +1096,26 @@ function delItem(dayId, itemId) {
 }
 
 /* ---------------- expense form (지출 추가/수정) ---------------- */
-// 입력 중인 칸을 기준으로 반대쪽을 매번 재계산 (마지막 입력값 기준). 환율은 그날 환율.
-function autoFx(which, rate) {
+// 폼의 환율칸(f_rate)을 실시간으로 읽음
+function formRate() { const r = document.getElementById("f_rate"); return r ? (Number(r.value) || 0) : 0; }
+let fxLastEdited = "usd";   // 마지막으로 사용자가 직접 친 금액 칸 (환율 변경 시 기준)
+// 입력 중인 칸을 기준으로 반대쪽을 매번 재계산.
+function autoFx(which) {
+  fxLastEdited = which;
   const k = document.getElementById("f_krw"), u = document.getElementById("f_usd");
+  const rate = formRate();
   if (!rate || !k || !u) return;
   if (which === "krw") u.value = (k.value === "" ? "" : (Number(k.value) / rate).toFixed(2));
   else k.value = (u.value === "" ? "" : String(Math.round(Number(u.value) * rate)));
+}
+// 환율칸을 바꾸면 '마지막에 입력한 금액 칸'을 기준으로 반대쪽 재계산
+function onFormRate() {
+  const k = document.getElementById("f_krw"), u = document.getElementById("f_usd");
+  const rate = formRate();
+  if (!rate || !k || !u) return;
+  if (fxLastEdited === "krw" && k.value !== "") u.value = (Number(k.value) / rate).toFixed(2);
+  else if (u.value !== "") k.value = String(Math.round(Number(u.value) * rate));
+  else if (k.value !== "") u.value = (Number(k.value) / rate).toFixed(2);
 }
 function openExpenseForm(scope, dateKey, id) {
   let e = null;
@@ -1122,11 +1136,14 @@ function openExpenseForm(scope, dateKey, id) {
       </datalist>
     </div>
     <div class="field"><label>항목명</label><input id="f_label" value="${esc(e ? e.label : "")}" placeholder="예: 점심 라멘"></div>
-    <div class="field row2">
-      <div><label>원화 (₩)</label><input type="number" id="f_krw" value="${e ? e.krw : ""}" min="0" step="1" oninput="autoFx('krw', ${rate})"></div>
-      <div><label>엔 (¥)</label><input type="number" id="f_usd" value="${e ? e.usd : ""}" min="0" step="0.01" oninput="autoFx('usd', ${rate})"></div>
+    <div class="field"><label>적용 환율 (1 JPY = ? KRW)</label>
+      <input type="number" id="f_rate" value="${rate}" min="0" step="0.01" oninput="onFormRate()">
     </div>
-    <div class="hint">환율 1 JPY = ${rate} KRW 기준 — 입력 중인 칸을 기준으로 반대쪽이 자동 계산됩니다 (그날 환율은 위 ‘그날 환율’에서 변경).</div>
+    <div class="field row2">
+      <div><label>원화 (₩)</label><input type="number" id="f_krw" value="${e ? e.krw : ""}" min="0" step="1" oninput="autoFx('krw')"></div>
+      <div><label>엔 (¥)</label><input type="number" id="f_usd" value="${e ? e.usd : ""}" min="0" step="0.01" oninput="autoFx('usd')"></div>
+    </div>
+    <div class="hint">환율은 오늘 기준이 기본값입니다. 직접 고치면 그 환율로 즉시 재계산되고, 한쪽 금액만 넣으면 나머지가 자동 계산됩니다.</div>
     <div class="field row2">
       <div><label>결제수단</label>
         <select id="f_pay">
@@ -1145,6 +1162,7 @@ function openExpenseForm(scope, dateKey, id) {
       <button onclick="closeModal()">취소</button>
       <button class="primary" onclick="saveExpense('${scope}','${dateKey}','${id || ""}')">저장</button>
     </div>`);
+  fxLastEdited = "usd";
 }
 function saveExpense(scope, dateKey, id) {
   const data = {
@@ -1160,6 +1178,8 @@ function saveExpense(scope, dateKey, id) {
   } else {
     const bucket = state.budget.daily[dateKey] ||
       (state.budget.daily[dateKey] = { rate: Number(state.rate) || 9, items: [] });
+    const fr = Number(val("f_rate"));
+    if (fr) bucket.rate = fr;   // 폼에서 입력한 환율을 그날 환율로 저장
     if (id) Object.assign(bucket.items.find(x => x.id === id), data);
     else bucket.items.push({ id: uid(), ...data });
   }
