@@ -99,7 +99,10 @@
   .tl-item + .tl-item { border-top: 1px dashed var(--line); }
   .tl-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; cursor: pointer; user-select: none; }
   .tl-top:hover .tl-place { color: var(--accent); }
-  .tl-time { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 52px; }
+  .tl-time { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 52px; cursor: text; border-radius: 4px; }
+  .tl-time:hover { background: var(--accent-soft); }
+  .tl-time.empty { color: var(--muted); font-weight: 400; font-size: 12px; border: 1px dashed var(--line); padding: 0 6px; }
+  .tl-timeinput { font: inherit; padding: 1px 4px; border: 1px solid var(--accent); border-radius: 4px; }
   .tl-place { font-weight: 600; }
   .tl-hint { font-size: 12px; opacity: .8; }
   .tl-caret { margin-left: auto; color: var(--muted); font-size: 12px; }
@@ -721,7 +724,8 @@ function renderDays() {
       return `
       <div class="tl-item${open ? " open" : ""}" id="item-${it.id}">
         <div class="tl-top" onclick="toggleItem('${it.id}')">
-          <span class="tl-time">${esc(it.time || "")}</span>
+          <span class="tl-time${it.time ? "" : " empty"}" id="time-${it.id}" title="시간 입력/수정"
+                onclick="event.stopPropagation(); editTime('${day.id}','${it.id}')">${it.time ? esc(it.time) : "＋시간"}</span>
           <span class="tl-place">${esc(it.place || "")}</span>
           ${hint ? `<span class="tl-hint">${hint}</span>` : ""}
           <span class="tl-caret">${open ? "▾" : "▸"}</span>
@@ -761,6 +765,27 @@ function renderDays() {
 function toggleDayCollapse(id) {
   if (collapsedDays.has(id)) collapsedDays.delete(id); else collapsedDays.add(id);
   renderDays();
+}
+// 시간 칸을 클릭하면 그 자리에서 시간 입력 (인라인 편집)
+function editTime(dayId, itemId) {
+  const el = document.getElementById("time-" + itemId);
+  const day = state.days.find(d => d.id === dayId);
+  const it = day && day.items.find(i => i.id === itemId);
+  if (!el || !it) return;
+  el.innerHTML = `<input type="time" class="tl-timeinput" value="${esc(it.time || "")}"
+    onclick="event.stopPropagation()"
+    onchange="saveTime('${dayId}','${itemId}', this.value)"
+    onblur="renderDays()">`;
+  const input = el.querySelector("input");
+  input.focus();
+  if (input.showPicker) { try { input.showPicker(); } catch (_) {} }
+}
+function saveTime(dayId, itemId, v) {
+  const day = state.days.find(d => d.id === dayId);
+  const it = day && day.items.find(i => i.id === itemId);
+  if (!it) return;
+  it.time = v;
+  save();   // 정렬·렌더·클라우드 동기화
 }
 // 일정 항목 세부사항 펼치기/접기 (DOM만 토글 — 렌더 유지)
 function toggleItem(id) {
