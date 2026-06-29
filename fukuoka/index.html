@@ -327,8 +327,8 @@
   <div class="brand">🇯🇵 <span>Fukuoka</span> Trip Planner</div>
   <span id="syncBadge" style="font-size:13px;color:#8a8a82">연결 중…</span>
   <button class="sm" onclick="doPrint()">📄 PDF로 저장</button>
-  <button class="sm" onclick="exportJSON()">JSON 내보내기</button>
-  <button class="sm" onclick="document.getElementById('importFile').click()">가져오기</button>
+  <button class="sm" onclick="exportJSON()">💾 백업 저장</button>
+  <button class="sm ghost" onclick="restoreBackup()" title="백업 파일에서 복원 (현재 데이터 덮어씀)">복원</button>
   <input type="file" id="importFile" accept="application/json" style="display:none" onchange="importJSON(event)">
 </div>
 
@@ -1329,6 +1329,12 @@ function exportJSON() {
   a.download = "fukuoka-trip-planner.json";
   a.click();
   URL.revokeObjectURL(a.href);
+}
+// 복원: 덮어쓰기 경고 후에만 파일 선택창 열기
+function restoreBackup() {
+  if (confirm("백업(JSON) 파일로 현재 데이터를 덮어씁니다.\n클라우드와 다른 기기에도 반영됩니다. 계속할까요?")) {
+    document.getElementById("importFile").click();
+  }
 }
 function importJSON(ev) {
   const file = ev.target.files[0];
