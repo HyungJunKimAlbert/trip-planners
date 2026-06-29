@@ -183,6 +183,25 @@
     .hero { padding: 26px 20px; }
     .toolbar .brand { width: 100%; margin-bottom: 4px; }
   }
+
+  /* ===== 인쇄 / PDF 저장용 ===== */
+  @media print {
+    @page { margin: 14mm; }
+    body { background: #fff; }
+    .wrap { max-width: none; padding: 0; }
+    /* 화면 전용 UI 숨김 */
+    .toolbar, #syncBadge,
+    .section-head button, .day-head button,
+    .tl-actions button, .rate-row button, .rate-row label,
+    .hero .edit-btn, .map-frame { display: none !important; }
+    /* 카드가 페이지 경계에서 잘리지 않게 */
+    .hero, .day, .bcard, table.budget, .link-group { break-inside: avoid; box-shadow: none !important; }
+    .day, .hero { border: 1px solid #ddd; }
+    .section { margin-top: 22px; }
+    a { color: #000 !important; text-decoration: none; }
+    /* 링크 모음은 인쇄물에서 실제 주소가 보이도록 */
+    .link-item .url { max-width: none; white-space: normal; color: #555; }
+  }
 </style>
 </head>
 <body>
@@ -190,6 +209,7 @@
 <div class="toolbar">
   <div class="brand">🇯🇵 <span>Fukuoka</span> Trip Planner</div>
   <span id="syncBadge" style="font-size:13px;color:#8a8a82">연결 중…</span>
+  <button class="sm" onclick="window.print()">📄 PDF로 저장</button>
   <button class="sm" onclick="exportJSON()">JSON 내보내기</button>
   <button class="sm" onclick="document.getElementById('importFile').click()">가져오기</button>
   <button class="sm" onclick="resetAll()">초기화</button>
