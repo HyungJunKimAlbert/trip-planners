@@ -933,14 +933,15 @@ renderAll();
 fetchRate(false);
 
 /* ---------------- 클라우드 동기화 브리지 ---------------- */
-// supabase-sync.js가 state를 읽고/교체할 수 있도록 노출
+// firebase-sync.js가 state를 읽고/교체할 수 있도록 노출
 window.LOCAL_KEY = KEY;
 window.TRIP_ID = "usa";
 window.__getState = () => state;
 window.__setState = (obj) => { state = obj; renderAll(); fetchRate(false); };
 </script>
-<!-- Supabase 클라우드 동기화 (공유 편집) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../shared/supabase-sync.js"></script>
+<!-- Firebase Firestore 클라우드 동기화 (공유 편집) -->
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+<script src="../shared/firebase-sync.js"></script>
 </body>
 </html>

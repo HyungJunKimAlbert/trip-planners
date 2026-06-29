@@ -933,8 +933,9 @@ window.TRIP_ID = "fukuoka";
 window.__getState = () => state;
 window.__setState = (obj) => { state = obj; renderAll(); fetchRate(false); };
 </script>
-<!-- Supabase 클라우드 동기화 (공유 편집) -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../shared/supabase-sync.js"></script>
+<!-- Firebase Firestore 클라우드 동기화 (공유 편집) -->
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
+<script src="../shared/firebase-sync.js"></script>
 </body>
 </html>
