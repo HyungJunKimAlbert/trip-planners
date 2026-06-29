@@ -97,15 +97,15 @@
     background: #fff; border: 2px solid var(--accent);
   }
   .tl-item + .tl-item { border-top: 1px dashed var(--line); }
-  .tl-top { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; cursor: pointer; user-select: none; }
+  .tl-top { display: flex; align-items: flex-start; gap: 8px; flex-wrap: nowrap; cursor: pointer; user-select: none; }
   .tl-top:hover .tl-place { color: var(--accent); }
-  .tl-time { color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 52px; cursor: text; border-radius: 4px; }
+  .tl-time { flex: 0 0 auto; color: var(--accent); font-weight: 700; font-variant-numeric: tabular-nums; min-width: 52px; cursor: text; border-radius: 4px; }
   .tl-time:hover { background: var(--accent-soft); }
   .tl-time.empty { color: var(--muted); font-weight: 400; font-size: 12px; border: 1px dashed var(--line); padding: 0 6px; }
   .tl-timeinput { font: inherit; padding: 1px 4px; border: 1px solid var(--accent); border-radius: 4px; }
-  .tl-place { font-weight: 600; }
-  .tl-hint { font-size: 12px; opacity: .8; }
-  .tl-caret { margin-left: auto; color: var(--muted); font-size: 12px; }
+  .tl-place { font-weight: 600; flex: 1 1 auto; min-width: 0; overflow-wrap: anywhere; }
+  .tl-hint { flex: 0 0 auto; font-size: 12px; opacity: .8; white-space: nowrap; }
+  .tl-caret { flex: 0 0 auto; color: var(--muted); font-size: 12px; }
   .tl-detail { margin-top: 4px; }
   .tl-memo { color: #5a5a52; font-size: 14px; margin-top: 2px; white-space: pre-wrap; }
   .tl-memo img { max-width: 100%; border-radius: 8px; margin: 6px 0; display: block; }
@@ -304,8 +304,9 @@
     /* 접힌 날짜/이미지도 인쇄 때는 모두 펼침 */
     .timeline, .tl-memo img { display: block !important; }
     /* 큰 카드(.day)는 페이지 넘김 허용, 작은 단위만 안 잘리게 */
-    .day, .section, .link-group { break-inside: auto; }
-    .tl-item, .bday, .bcard, .totalcard, .link-item, table.dash tr { break-inside: avoid; }
+    .day, .section, .link-group, .tl-item, .tl-detail { break-inside: auto; }
+    .bday, .bcard, .totalcard, .link-item, table.dash tr { break-inside: avoid; }
+    .tl-memo img, .hero .memo img { break-inside: avoid; }
     .day-head, .bday-head, h1, h2 { break-after: avoid; }
     .hero, .day, .bday { border: 1px solid #ddd; }
     .section { margin-top: 18px; }
@@ -313,7 +314,8 @@
     /* 가로 넘침/잘림 방지 */
     .tl-memo, .erow, .link-item { overflow-wrap: anywhere; word-break: break-word; }
     .link-item .url { max-width: none; white-space: normal; color: #555; }
-    .tl-memo img, .hero .memo img { max-width: 100% !important; max-height: 90vh; }
+    /* 인쇄 시 사진은 작게 — 페이지 넘김/여백 최소화 (글자와 함께 흐르도록) */
+    .tl-memo img, .hero .memo img { max-width: 60% !important; max-height: 7cm !important; }
     .erow { flex-wrap: wrap; }
   }
 </style>
