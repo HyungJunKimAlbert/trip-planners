@@ -315,7 +315,7 @@
     .tl-memo, .erow, .link-item { overflow-wrap: anywhere; word-break: break-word; }
     .link-item .url { max-width: none; white-space: normal; color: #555; }
     /* 인쇄 시 사진은 작게 — 페이지 넘김/여백 최소화 (글자와 함께 흐르도록) */
-    .tl-memo img, .hero .memo img { max-width: 60% !important; max-height: 7cm !important; }
+    .tl-memo img, .hero .memo img { max-width: 50% !important; max-height: 4cm !important; }
     .erow { flex-wrap: wrap; }
   }
 </style>
@@ -679,7 +679,7 @@ function sortedDays() {
   return [...state.days].sort((a, b) => (a.date || "").localeCompare(b.date || ""));
 }
 function sortedItems(day) {
-  return [...day.items].sort((a, b) => (a.time || "").localeCompare(b.time || ""));
+  return [...day.items];   // 수동 순서(저장된 배열 순서) 유지 — ▲/▼로 조정
 }
 
 // 상단 대시보드 요약표
@@ -735,6 +735,8 @@ function renderDays() {
         <div class="tl-detail"${open ? "" : ' style="display:none"'}>
           ${memoHtml}
           <div class="tl-actions">
+            <button class="ghost sm" onclick="moveItem('${day.id}','${it.id}',-1)" title="위로">▲</button>
+            <button class="ghost sm" onclick="moveItem('${day.id}','${it.id}',1)" title="아래로">▼</button>
             ${it.mapQuery ? `<a class="maplink" href="${esc(mapSearchUrl(it.mapQuery))}" target="_blank" rel="noopener">🗺️ 지도</a>
               <button class="ghost sm" onclick="toggleMap('${day.id}','${it.id}',this)">지도보기</button>` : ""}
             <button class="ghost sm" onclick="openItemForm('${day.id}','${it.id}')">수정</button>
@@ -753,6 +755,7 @@ function renderDays() {
           <span class="dow">${esc(dow(day.date))}</span>
           <span class="cnt">${items.length}개</span>
           <span class="sp"></span>
+          <button class="ghost sm" onclick="sortDayByTime('${day.id}')" title="이 날 일정을 시간순으로 정렬">🕘 시간순</button>
           <button class="ghost sm" onclick="openItemForm('${day.id}')">+ 일정</button>
           <button class="ghost sm" onclick="openDayForm('${day.id}')">날짜수정</button>
           <button class="ghost sm" onclick="delDay('${day.id}')">삭제</button>
@@ -1164,6 +1167,23 @@ function saveItem(dayId, itemId) {
 function delItem(dayId, itemId) {
   const day = state.days.find(d => d.id === dayId);
   day.items = day.items.filter(i => i.id !== itemId);
+  save();
+}
+// 항목 위/아래 이동 (dir: -1 위, +1 아래)
+function moveItem(dayId, itemId, dir) {
+  const day = state.days.find(d => d.id === dayId);
+  if (!day) return;
+  const i = day.items.findIndex(x => x.id === itemId);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= day.items.length) return;
+  [day.items[i], day.items[j]] = [day.items[j], day.items[i]];
+  save();
+}
+// 그 날 일정을 시간순으로 한 번 정렬
+function sortDayByTime(dayId) {
+  const day = state.days.find(d => d.id === dayId);
+  if (!day) return;
+  day.items.sort((a, b) => (a.time || "").localeCompare(b.time || ""));
   save();
 }
 
