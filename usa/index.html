@@ -222,10 +222,54 @@
 
   .empty { color: var(--muted); font-style: italic; padding: 8px 2px; }
 
+  /* ===================== EDITORIAL OVERHAUL ===================== */
+  /* 지면처럼: 좁은 컬럼 + 카드 최소 + 헤어라인 + 넓은 여백 */
+  .wrap { max-width: 720px; }
+
+  /* 히어로 = 매거진 마스트헤드 (박스 제거, 강한 상단 룰) */
+  .hero { background: transparent; border: 0; border-radius: 0; box-shadow: none;
+    border-top: 2.5px solid var(--ink); border-bottom: 1px solid var(--line);
+    padding: 22px 0 26px; margin: 14px 0 26px; }
+  .hero h1 { font-size: 48px; margin: 12px 0 12px; }
+  .hero .kicker { color: var(--accent2); }
+  .hero .edit-btn { top: 22px; right: 0; }
+
+  /* 섹션 헤드라인 + 얇은 룰 */
+  .section { margin-top: 54px; }
+  .section-head { border-bottom: 1px solid var(--line); padding-bottom: 8px; }
+  .section-head h2 { font-size: 26px; }
+
+  /* 탭 내비 */
+  .tabbar { border-bottom: 1px solid var(--line); margin-top: 30px; }
+
+  /* 일정 = 카드 제거 → 날짜별 헤어라인 구분 + 좌측 레일 */
+  .day { background: transparent; border: 0; border-radius: 0; box-shadow: none;
+    padding: 20px 0 8px; margin: 0; border-top: 1px solid var(--line); }
+  #days .day:first-child { border-top: 0; padding-top: 6px; }
+  .day-head .date { font-family: var(--font-display); font-size: 23px; }
+  .day-head .caret { color: var(--muted); }
+  .timeline { border-left: 1px solid var(--line); margin-left: 3px; margin-top: 12px; }
+  .tl-item::before { background: var(--bg); width: 9px; height: 9px; left: -5px; top: 19px; border-width: 1.5px; }
+
+  /* 대시보드 = 박스 제거, 얇은 신문 표 */
+  table.dash { background: transparent; border: 0; border-radius: 0; box-shadow: none;
+    border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+  table.dash th { background: transparent; border-bottom: 1px solid var(--line); }
+
+  /* 예산·링크 = 그림자 제거, 모서리 차분하게 (구조 유지) */
+  .bday, .bcard, .link-item { box-shadow: none; border-radius: 6px; }
+  table.budget { box-shadow: none; border-radius: 0; border-left: 0; border-right: 0; }
+  table.budget th, table.dash th { font-weight: 600; }
+  .link-group h3 { font-family: var(--font-display); color: var(--ink); font-size: 16px;
+    border-bottom: 1px solid var(--line); padding-bottom: 5px; }
+  button.sm { border-radius: 6px; }
+  /* =============================================================== */
+
   @media (max-width: 560px) {
     .wrap { padding: 0 12px 100px; }
-    .hero h1 { font-size: 26px; }
-    .hero { padding: 24px 18px; }
+    .hero h1 { font-size: 31px; }
+    .hero { padding: 18px 0 22px; }
+    .wrap { max-width: none; }
     .toolbar { padding: 8px 12px; }
     .toolbar .brand { width: 100%; margin-bottom: 4px; }
     /* 일정 항목: 시간/장소는 한 줄, 버튼은 아래 줄 우측 */
