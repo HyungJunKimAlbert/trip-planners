@@ -222,47 +222,48 @@
 
   .empty { color: var(--muted); font-style: italic; padding: 8px 2px; }
 
-  /* ===================== EDITORIAL OVERHAUL ===================== */
-  /* 지면처럼: 좁은 컬럼 + 카드 최소 + 헤어라인 + 넓은 여백 */
-  .wrap { max-width: 720px; }
+  /* ===================== TRAVEL BLOG LOOK ===================== */
+  .wrap { max-width: 760px; }
 
-  /* 히어로 = 매거진 마스트헤드 (박스 제거, 강한 상단 룰) */
-  .hero { background: transparent; border: 0; border-radius: 0; box-shadow: none;
-    border-top: 2.5px solid var(--ink); border-bottom: 1px solid var(--line);
-    padding: 22px 0 26px; margin: 14px 0 26px; }
-  .hero h1 { font-size: 48px; margin: 12px 0 12px; }
-  .hero .kicker { color: var(--accent2); }
-  .hero .edit-btn { top: 22px; right: 0; }
+  /* 커버 히어로: 사진 + 그라데이션 + 타이틀 오버레이 */
+  .hero { background: transparent; border: 0; box-shadow: none; border-radius: 0;
+    padding: 0; margin: 16px 0 34px; }
+  .cover { position: relative; border-radius: 16px; overflow: hidden;
+    min-height: clamp(240px, 42vw, 340px); background: var(--accent-soft) center/cover no-repeat;
+    display: flex; align-items: flex-end; box-shadow: var(--shadow); }
+  .cover::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(22,17,12,.82) 0%, rgba(22,17,12,.30) 48%, rgba(22,17,12,.06) 100%); }
+  .cover-text { position: relative; z-index: 1; padding: 26px 30px; color: #fff; width: 100%; }
+  .cover .kicker { color: #ffd7a3; font-weight: 700; font-size: 12px; letter-spacing: 3px; text-transform: uppercase; }
+  .cover h1 { font-family: var(--font-display); color: #fff; font-size: clamp(28px, 6.4vw, 44px);
+    line-height: 1.12; margin: 8px 0 10px; text-shadow: 0 2px 16px rgba(0,0,0,.45); }
+  .cover .meta { color: rgba(255,255,255,.94); font-size: 15px; display: flex; gap: 16px; flex-wrap: wrap; }
+  .cover .meta b { color: #fff; }
+  .cover .edit-btn { position: absolute; top: 16px; right: 16px;
+    background: rgba(255,255,255,.92); border-color: transparent; }
+  .hero .dday { margin: 16px 0 0; }
+  .hero .memo { margin-top: 14px; }
 
-  /* 섹션 헤드라인 + 얇은 룰 */
-  .section { margin-top: 54px; }
-  .section-head { border-bottom: 1px solid var(--line); padding-bottom: 8px; }
-  .section-head h2 { font-size: 26px; }
-
-  /* 탭 내비 */
+  .section { margin-top: 46px; }
+  .section-head h2 { font-size: 24px; }
   .tabbar { border-bottom: 1px solid var(--line); margin-top: 30px; }
 
-  /* 일정 = 카드 제거 → 날짜별 헤어라인 구분 + 좌측 레일 */
-  .day { background: transparent; border: 0; border-radius: 0; box-shadow: none;
-    padding: 20px 0 8px; margin: 0; border-top: 1px solid var(--line); }
-  #days .day:first-child { border-top: 0; padding-top: 6px; }
-  .day-head .date { font-family: var(--font-display); font-size: 23px; }
-  .day-head .caret { color: var(--muted); }
-  .timeline { border-left: 1px solid var(--line); margin-left: 3px; margin-top: 12px; }
-  .tl-item::before { background: var(--bg); width: 9px; height: 9px; left: -5px; top: 19px; border-width: 1.5px; }
+  /* 일정 = 블로그 포스트 카드 (상단 커버 사진 + 날짜 오버레이) */
+  .day { background: var(--card); border: 1px solid var(--line); border-radius: 16px;
+    box-shadow: var(--shadow); padding: 0; margin: 0 0 28px; overflow: hidden; }
+  .day-cover { position: relative; height: clamp(130px, 30vw, 180px);
+    background: var(--accent-soft) center/cover no-repeat; }
+  .day-cover::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(to top, rgba(22,17,12,.62), rgba(22,17,12,0) 62%); }
+  .day-cover .day-date { position: absolute; left: 20px; bottom: 13px; z-index: 1;
+    font-family: var(--font-display); font-size: 25px; color: #fff; text-shadow: 0 2px 10px rgba(0,0,0,.5); }
+  .day-cover .day-date small { font-family: var(--font-body); font-weight: 500; font-size: 14px; opacity: .92; margin-left: 6px; }
+  .day-body { padding: 12px 22px 18px; }
+  .day-head { margin-bottom: 0; }
+  .day-head .date, .day-head .dow { display: none; }   /* 날짜는 커버에 표시 */
+  .timeline { margin-top: 8px; }
 
-  /* 대시보드 = 박스 제거, 얇은 신문 표 */
-  table.dash { background: transparent; border: 0; border-radius: 0; box-shadow: none;
-    border-top: 1.5px solid var(--ink); border-bottom: 1px solid var(--line); margin-bottom: 20px; }
-  table.dash th { background: transparent; border-bottom: 1px solid var(--line); }
-
-  /* 예산·링크 = 그림자 제거, 모서리 차분하게 (구조 유지) */
-  .bday, .bcard, .link-item { box-shadow: none; border-radius: 6px; }
-  table.budget { box-shadow: none; border-radius: 0; border-left: 0; border-right: 0; }
-  table.budget th, table.dash th { font-weight: 600; }
-  .link-group h3 { font-family: var(--font-display); color: var(--ink); font-size: 16px;
-    border-bottom: 1px solid var(--line); padding-bottom: 5px; }
-  button.sm { border-radius: 6px; }
+  .link-group h3 { font-family: var(--font-display); color: var(--ink); font-size: 16px; }
   /* =============================================================== */
 
   @media (max-width: 560px) {
@@ -714,19 +715,43 @@ function memoHasContent(html) {
 }
 
 /* ---------------- render: overview ---------------- */
+// 날짜별 지역 사진 (Wikimedia Commons, CC). 라스베가스 일정=라스베가스, LA 일정=LA, 전부 다른 사진.
+const HERO_COVER = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Las_Vegas_%28Nevada%2C_USA%29%2C_The_Strip_--_2012_--_6232.jpg/1280px-Las_Vegas_%28Nevada%2C_USA%29%2C_The_Strip_--_2012_--_6232.jpg";
+const DAY_COVERS = {
+  "2026-07-31": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Welcome_to_Fabulous_Las_Vegas.jpg/1280px-Welcome_to_Fabulous_Las_Vegas.jpg",
+  "2026-08-01": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Bellagio_Las_Vegas_December_2013_panorama.jpg/1280px-Bellagio_Las_Vegas_December_2013_panorama.jpg",
+  "2026-08-02": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Grand_Canyon_Hopi_Point_with_rainbow_2013.jpg/1280px-Grand_Canyon_Hopi_Point_with_rainbow_2013.jpg",
+  "2026-08-03": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Desert_Springs_Exit%2C_Interstate_15_Between_Mesquite%2C_Nevada_and_St._George%2C_Utah_%282157424884%29.jpg/1280px-Desert_Springs_Exit%2C_Interstate_15_Between_Mesquite%2C_Nevada_and_St._George%2C_Utah_%282157424884%29.jpg",
+  "2026-08-04": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/10/USA_Santa_Monica_Beach_and_pier_CA.jpg/1280px-USA_Santa_Monica_Beach_and_pier_CA.jpg",
+  "2026-08-05": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Hollywood_Sign.jpg/1280px-Hollywood_Sign.jpg",
+  "2026-08-06": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b9/Griffith_Observatory_2012_01.jpg/1280px-Griffith_Observatory_2012_01.jpg",
+  "2026-08-07": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Downtown_Los_Angeles_skyline_from_Toy_District.jpg/1280px-Downtown_Los_Angeles_skyline_from_Toy_District.jpg",
+  "2026-08-08": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f8/Venice_Beach%2C_Los_Angeles%2C_CA_01.jpg/1280px-Venice_Beach%2C_Los_Angeles%2C_CA_01.jpg",
+  "2026-08-09": "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/SunsetGowerStudios_Dec2006.jpg/1280px-SunsetGowerStudios_Dec2006.jpg",
+  "2026-08-10": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/Theme_Building_Los_Angeles_International_Airport_2019.jpg/1280px-Theme_Building_Los_Angeles_International_Airport_2019.jpg"
+};
+// 폴백: 무료 스톡 사진(picsum) — 시드 고정이라 같은 날짜는 같은 사진.
+function picCover(seed, w, h) {
+  return `https://picsum.photos/seed/${encodeURIComponent(KEY + "-" + seed)}/${w}/${h}`;
+}
 function renderHero() {
   const o = state.overview;
   const total = daysBetween(o.startDate, o.endDate);
   const range = o.startDate
     ? `${fmtDate(o.startDate)} – ${fmtDate(o.endDate)}` + (total ? ` (${total - 1}박 ${total}일)` : "")
     : "기간 미정";
+  const cover = o.coverUrl || HERO_COVER || picCover("cover", 1280, 560);
   document.getElementById("hero").innerHTML = `
-    <button class="sm edit-btn" onclick="openOverviewForm()">편집</button>
-    <div class="kicker">Travel Journal</div>
-    <h1>${esc(o.title) || "여행 제목"}</h1>
-    <div class="meta">
-      ${o.city ? `<span>📍 <b>${esc(o.city)}</b></span>` : ""}
-      <span>🗓️ ${esc(range)}</span>
+    <div class="cover" style="background-image:url('${esc(cover)}')">
+      <button class="sm edit-btn" onclick="openOverviewForm()">편집</button>
+      <div class="cover-text">
+        <div class="kicker">Travel Journal</div>
+        <h1>${esc(o.title) || "여행 제목"}</h1>
+        <div class="meta">
+          ${o.city ? `<span>📍 <b>${esc(o.city)}</b></span>` : ""}
+          <span>🗓️ ${esc(range)}</span>
+        </div>
+      </div>
     </div>
     ${o.startDate ? `<div class="dday">${esc(ddayLabel(o.startDate))}</div>` : ""}
     ${o.memoHtml ? `<div class="memo">${o.memoHtml}</div>` : (o.memo ? `<div class="memo">${esc(o.memo)}</div>` : "")}
@@ -808,20 +833,26 @@ function renderDays() {
       </div>`;
     }).join("") : `<div class="empty">일정 항목이 없습니다.</div>`;
 
+    const dayCover = day.coverUrl || DAY_COVERS[day.date] || picCover(day.date || day.id, 1000, 380);
     return `
       <div class="day" id="day-${day.id}">
-        <div class="day-head">
-          <button class="ghost sm caret" onclick="toggleDayCollapse('${day.id}')" title="접기/펼치기">${collapsed ? "▸" : "▾"}</button>
-          <span class="date">${esc(fmtDate(day.date))}</span>
-          <span class="dow">${esc(dow(day.date))}</span>
-          <span class="cnt">${items.length}개</span>
-          <span class="sp"></span>
-          <button class="ghost sm" onclick="sortDayByTime('${day.id}')" title="이 날 일정을 시간순으로 정렬">🕘 시간순</button>
-          <button class="ghost sm" onclick="openItemForm('${day.id}')">+ 일정</button>
-          <button class="ghost sm" onclick="openDayForm('${day.id}')">날짜수정</button>
-          <button class="ghost sm" onclick="delDay('${day.id}')">삭제</button>
+        <div class="day-cover" style="background-image:url('${esc(dayCover)}')">
+          <span class="day-date">${esc(fmtDate(day.date))}<small>${esc(dow(day.date))}</small></span>
         </div>
-        <div class="timeline"${collapsed ? ' style="display:none"' : ""}>${itemsHtml}</div>
+        <div class="day-body">
+          <div class="day-head">
+            <button class="ghost sm caret" onclick="toggleDayCollapse('${day.id}')" title="접기/펼치기">${collapsed ? "▸" : "▾"}</button>
+            <span class="date">${esc(fmtDate(day.date))}</span>
+            <span class="dow">${esc(dow(day.date))}</span>
+            <span class="cnt">${items.length}개</span>
+            <span class="sp"></span>
+            <button class="ghost sm" onclick="sortDayByTime('${day.id}')" title="이 날 일정을 시간순으로 정렬">🕘 시간순</button>
+            <button class="ghost sm" onclick="openItemForm('${day.id}')">+ 일정</button>
+            <button class="ghost sm" onclick="openDayForm('${day.id}')">날짜수정</button>
+            <button class="ghost sm" onclick="delDay('${day.id}')">삭제</button>
+          </div>
+          <div class="timeline"${collapsed ? ' style="display:none"' : ""}>${itemsHtml}</div>
+        </div>
       </div>
     `;
   }).join("");
@@ -1128,6 +1159,13 @@ document.addEventListener("keydown", e => { if (e.key === "Escape") closeModal()
 const val = id => document.getElementById(id).value.trim();
 
 /* ---------------- overview form ---------------- */
+// 커버 사진 파일 업로드 → 압축 후 data URL을 입력칸에 채움
+function onCoverFile(input) {
+  const f = input.files && input.files[0];
+  if (!f) return;
+  compressImage(f, 1280, 0.78).then(d => { document.getElementById("f_cover").value = d; })
+    .catch(e => console.warn("cover compress failed", e));
+}
 function openOverviewForm() {
   const o = state.overview;
   openModal(`
@@ -1137,6 +1175,12 @@ function openOverviewForm() {
     <div class="field row2">
       <div><label>시작일</label><input type="date" id="f_start" value="${esc(o.startDate)}"></div>
       <div><label>종료일</label><input type="date" id="f_end" value="${esc(o.endDate)}"></div>
+    </div>
+    <div class="field">
+      <label>커버 사진</label>
+      <input id="f_cover" value="${esc(o.coverUrl || "")}" placeholder="비우면 자동 스톡 사진 · 사진 URL 붙여넣기 가능">
+      <div style="margin-top:6px"><input type="file" accept="image/*" onchange="onCoverFile(this)"></div>
+      <div class="hint">비워두면 무료 스톡 사진이 자동으로 들어갑니다. 본인 사진을 올리거나 URL을 넣으면 그걸로 바뀝니다.</div>
     </div>
     <div class="field">
       <label>메모 · 사진</label>
@@ -1155,6 +1199,7 @@ function saveOverview() {
   state.overview = {
     title: val("f_title"), city: val("f_city"),
     startDate: val("f_start"), endDate: val("f_end"),
+    coverUrl: val("f_cover") || undefined,
     memoHtml: sanitizeMemo(document.getElementById("f_memo").innerHTML)
   };
   closeModal(); save();
